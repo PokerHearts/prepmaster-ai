@@ -716,6 +716,12 @@
       border-color: var(--border-glow);
     }
 
+    .readonly-field {
+      background-color: rgba(30, 41, 59, 0.45) !important;
+      cursor: not-allowed;
+      opacity: 0.85;
+    }
+
     .q-card-header {
       display: flex;
       justify-content: space-between;
@@ -1707,15 +1713,12 @@
                 <span>✨ Game Lifelines</span>
                 <span id="lifelines-status-badge" style="font-size: 0.7rem; background: var(--accent-light); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-color); font-weight: 600;">Active</span>
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
                 <button id="lifeline-5050" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Removes 2 incorrect options">
                   <span>🌓 50-50</span>
                 </button>
                 <button id="lifeline-expert" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Asks the AI/Expert for assistance">
                   <span>🧠 Ask Expert</span>
-                </button>
-                <button id="lifeline-poll" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Simulates an Audience Poll">
-                  <span>📊 Audience Poll</span>
                 </button>
                 <button id="lifeline-flip" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Flips the current question with a new one">
                   <span>🔄 Flip Question</span>
@@ -1816,7 +1819,7 @@
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
               <select id="results-filter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" aria-label="Filter answers">
                 <option value="all">Show All</option>
-                <option value="wrong">Show Wrong Only</option>
+                <option value="incorrect">Show Wrong Only</option>
                 <option value="correct">Show Correct Only</option>
                 <option value="skipped">Show Skipped Only</option>
               </select>
@@ -1892,25 +1895,7 @@
     </div>
   </dialog>
 
-  <!-- DIALOG: KBC AUDIENCE POLL -->
-  <dialog id="kbc-poll-dialog" style="max-width: 500px; border: 1.5px solid var(--accent-color); box-shadow: var(--card-shadow);">
-    <div class="dialog-header">
-      <span class="dialog-title" style="color: var(--text-secondary); font-family: var(--font-family-title); display: flex; align-items: center; gap: 8px;">
-        <span>📊 Audience Poll Results</span>
-      </span>
-      <button class="dialog-close" id="kbc-poll-close">&times;</button>
-    </div>
-    <div style="padding: 15px 0;">
-      <p style="margin-bottom: 20px; color: var(--text-primary); font-size: 0.95rem;">The audience has voted! Here are the results for the current question:</p>
-      
-      <div id="kbc-poll-chart-container" style="display: flex; flex-direction: column; gap: 16px;">
-        <!-- Dynamic poll bars rendered here -->
-      </div>
-    </div>
-    <div class="dialog-footer">
-      <button id="kbc-poll-ok-btn" class="btn btn-primary" style="padding: 8px 24px;">Close Poll</button>
-    </div>
-  </dialog>
+
 
   <!-- DIALOG: SETTINGS / EXAM CONFIGURATION -->
   <dialog id="exam-config-dialog">
@@ -1995,7 +1980,6 @@
     let lifelinesUsed = {
       fiftyFifty: false,
       expert: false,
-      poll: false,
       flip: false
     };
     let questionHiddenOptions = {}; // { qIdx: [letters] }
@@ -2340,6 +2324,19 @@
       // Timer controls
       document.getElementById('exam-timer-pause-btn').addEventListener('click', pauseExamTimer);
       document.getElementById('exam-timer-resume-btn').addEventListener('click', resumeExamTimer);
+      
+      const headerTimerBox = document.getElementById('header-timer-box');
+      if (headerTimerBox) {
+        headerTimerBox.addEventListener('click', () => {
+          if (isTimerPaused) {
+            resumeExamTimer();
+          } else {
+            pauseExamTimer();
+          }
+        });
+        headerTimerBox.style.cursor = 'pointer';
+        headerTimerBox.title = 'Click to pause/resume';
+      }
 
       // Exam navigations
       document.getElementById('exam-prev-btn').addEventListener('click', () => navigateSlider(-1));
@@ -2410,14 +2407,11 @@
       // KBC Lifelines listeners
       document.getElementById('lifeline-5050').addEventListener('click', useFiftyFiftyLifeline);
       document.getElementById('lifeline-expert').addEventListener('click', useAskExpertLifeline);
-      document.getElementById('lifeline-poll').addEventListener('click', useAudiencePollLifeline);
       document.getElementById('lifeline-flip').addEventListener('click', useFlipQuestionLifeline);
 
       // KBC Lifelines Dialog close buttons
       document.getElementById('kbc-expert-close').addEventListener('click', () => document.getElementById('kbc-expert-dialog').close());
       document.getElementById('kbc-expert-ok-btn').addEventListener('click', () => document.getElementById('kbc-expert-dialog').close());
-      document.getElementById('kbc-poll-close').addEventListener('click', () => document.getElementById('kbc-poll-dialog').close());
-      document.getElementById('kbc-poll-ok-btn').addEventListener('click', () => document.getElementById('kbc-poll-dialog').close());
 
       // Untimed Mode checkbox change listener
       document.getElementById('exam-timer-off').addEventListener('change', (e) => {
@@ -3274,8 +3268,12 @@ ${questionListText}`;
 
       questions.forEach((q, idx) => {
         const card = document.createElement('div');
-        card.className = 'question-editor-card';
+        const isSystemGenerated = !q.isManual;
+        card.className = 'question-editor-card' + (isSystemGenerated ? ' system-generated-card' : '');
         card.dataset.index = idx;
+        
+        const readonlyAttr = isSystemGenerated ? 'readonly' : '';
+        const readonlyClass = isSystemGenerated ? 'readonly-field' : '';
         
         const optionsList = q.options ? Object.entries(q.options) : [['A', ''], ['B', ''], ['C', ''], ['D', '']];
         let optionsMarkup = '';
@@ -3284,7 +3282,7 @@ ${questionListText}`;
           optionsMarkup += `
             <div class="option-input-group">
               <span>${letter}:</span>
-              <input type="text" class="opt-input" data-letter="${letter}" value="${escapeHTML(text)}">
+              <input type="text" class="opt-input ${readonlyClass}" data-letter="${letter}" value="${escapeHTML(text)}" ${readonlyAttr}>
             </div>
           `;
         });
@@ -3297,15 +3295,16 @@ ${questionListText}`;
         });
 
         const sourceText = q.sourcePaper ? `<span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 10px;">📄 Source: ${escapeHTML(q.sourcePaper)}</span>` : '';
+        const lockText = isSystemGenerated ? `<span style="font-size: 0.75rem; color: var(--warning); margin-left: 10px; font-weight: 500;" title="System generated question text is locked. You can delete the full question, but not edit its text.">🔒 Text Locked</span>` : '';
 
         card.innerHTML = `
           <div class="q-card-header">
-            <span class="q-card-title">Question Number: <input type="number" class="form-control q-num-edit" style="width: 70px; display:inline-block; padding: 4px 8px; min-height:auto;" value="${q.questionNumber}">${sourceText}</span>
+            <span class="q-card-title">Question Number: <input type="number" class="form-control q-num-edit" style="width: 70px; display:inline-block; padding: 4px 8px; min-height:auto;" value="${q.questionNumber}">${sourceText}${lockText}</span>
             <button class="btn btn-danger btn-icon-only remove-q-btn" aria-label="Delete question">🗑️</button>
           </div>
           
           <div class="form-group" style="margin-bottom: 8px;">
-            <textarea class="form-control q-text-edit" rows="2">${escapeHTML(q.questionText)}</textarea>
+            <textarea class="form-control q-text-edit ${readonlyClass}" rows="2" ${readonlyAttr}>${escapeHTML(q.questionText)}</textarea>
           </div>
           
           <div class="option-grid-editor">
@@ -3319,7 +3318,7 @@ ${questionListText}`;
             </div>
             
             <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
-              <input type="text" class="form-control q-exp-edit" placeholder="AI Explanation (optional)" value="${escapeHTML(q.explanation || '')}" style="padding: 6px 12px; font-size: 0.85rem;">
+              <input type="text" class="form-control q-exp-edit ${readonlyClass}" placeholder="AI Explanation (optional)" value="${escapeHTML(q.explanation || '')}" style="padding: 6px 12px; font-size: 0.85rem;" ${readonlyAttr}>
             </div>
           </div>
         `;
@@ -3368,7 +3367,8 @@ ${questionListText}`;
         questionText: 'New question text...',
         options: { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
         correctAnswer: 'A',
-        explanation: ''
+        explanation: '',
+        isManual: true
       });
       buildPreviewEditorList();
       updatePreviewAnalytics();
@@ -3520,7 +3520,6 @@ ${questionListText}`;
       lifelinesUsed = {
         fiftyFifty: false,
         expert: false,
-        poll: false,
         flip: false
       };
       questionHiddenOptions = {};
@@ -3565,6 +3564,7 @@ ${questionListText}`;
       startExamTimer();
 
       switchView('preview-view', 'exam-view');
+      toggleFullscreen(true);
     }
 
     function startExamTimer() {
@@ -3645,10 +3645,9 @@ ${questionListText}`;
     function updateLifelineButtons() {
       const btn5050 = document.getElementById('lifeline-5050');
       const btnExpert = document.getElementById('lifeline-expert');
-      const btnPoll = document.getElementById('lifeline-poll');
       const btnFlip = document.getElementById('lifeline-flip');
       
-      if (!btn5050 || !btnExpert || !btnPoll || !btnFlip) return;
+      if (!btn5050 || !btnExpert || !btnFlip) return;
 
       if (lifelinesUsed.fiftyFifty) {
         btn5050.classList.add('lifeline-used');
@@ -3662,13 +3661,6 @@ ${questionListText}`;
         btnExpert.title = "Ask the Expert lifeline already used.";
       } else {
         btnExpert.classList.remove('lifeline-used');
-      }
-
-      if (lifelinesUsed.poll) {
-        btnPoll.classList.add('lifeline-used');
-        btnPoll.title = "Audience Poll lifeline already used.";
-      } else {
-        btnPoll.classList.remove('lifeline-used');
       }
 
       if (lifelinesUsed.flip) {
@@ -3796,66 +3788,7 @@ Which option is correct, and why? Provide a JSON response: {"correctAnswer": "${
       saveActiveExamState();
     }
 
-    function useAudiencePollLifeline() {
-      if (lifelinesUsed.poll) {
-        showToast("Audience Poll lifeline has already been used.", "warning");
-        return;
-      }
 
-      const q = questions[currentQuestionIdx];
-      if (!q || !q.options) return;
-
-      const correct = (q.correctAnswer || "A").toUpperCase();
-      const hidden = questionHiddenOptions[currentQuestionIdx] || [];
-      const letters = Object.keys(q.options);
-
-      let percentages = {};
-      letters.forEach(letter => percentages[letter] = 0);
-
-      const visibleWrong = letters.filter(l => l !== correct && !hidden.includes(l));
-
-      if (visibleWrong.length === 0) {
-        percentages[correct] = 100;
-      } else {
-        // Generate random score for correct answer
-        let correctPercent = Math.floor(Math.random() * 20) + 55; // 55% to 74%
-        percentages[correct] = correctPercent;
-
-        let remaining = 100 - correctPercent;
-        for (let i = 0; i < visibleWrong.length - 1; i++) {
-          let share = Math.floor(Math.random() * (remaining / 1.5));
-          percentages[visibleWrong[i]] = share;
-          remaining -= share;
-        }
-        percentages[visibleWrong[visibleWrong.length - 1]] = remaining;
-      }
-
-      // Render chart
-      const container = document.getElementById('kbc-poll-chart-container');
-      container.innerHTML = '';
-
-      Object.entries(percentages).forEach(([letter, pct]) => {
-        const row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.alignItems = 'center';
-        row.style.gap = '12px';
-
-        row.innerHTML = `
-          <div style="width: 24px; font-weight: 700; color: var(--text-secondary);">${letter}:</div>
-          <div class="progress-bar-outer" style="flex: 1; height: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 0;">
-            <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--success)); border-radius: 9px; transition: width 0.8s ease-in-out;"></div>
-          </div>
-          <div style="width: 45px; text-align: right; font-weight: 600; color: var(--text-primary);">${pct}%</div>
-        `;
-        container.appendChild(row);
-      });
-
-      lifelinesUsed.poll = true;
-      updateLifelineButtons();
-      
-      document.getElementById('kbc-poll-dialog').showModal();
-      saveActiveExamState();
-    }
 
     async function useFlipQuestionLifeline() {
       if (lifelinesUsed.flip) {
@@ -4026,11 +3959,11 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
         secondsRemaining = state.secondsRemaining;
         totalExamSeconds = state.totalExamSeconds;
         examStartTime = state.examStartTime;
+        isTimerPaused = false;
         
         lifelinesUsed = state.lifelinesUsed || {
           fiftyFifty: false,
           expert: false,
-          poll: false,
           flip: false
         };
         questionHiddenOptions = state.questionHiddenOptions || {};
@@ -4056,6 +3989,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
         startExamTimer();
 
         switchView('setup-view', 'exam-view');
+        toggleFullscreen(true);
         showToast("Active exam session restored successfully.", "success");
       } catch (err) {
         showToast("Failed to restore session.", "error");
@@ -4326,6 +4260,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       localStorage.removeItem('exam_saved_state'); // Clear active session state
       
       document.getElementById('confirm-submit-dialog').close();
+      toggleFullscreen(false);
       
       // Calculate scores
       evaluateScoresAndDisplay();
@@ -4626,7 +4561,6 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       lifelinesUsed = {
         fiftyFifty: false,
         expert: false,
-        poll: false,
         flip: false
       };
       questionHiddenOptions = {};
@@ -4652,6 +4586,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       startExamTimer();
 
       switchView('results-view', 'exam-view');
+      toggleFullscreen(true);
       showToast("Answers reset. Timer restarted.", "info");
     }
 
@@ -4665,7 +4600,56 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       localStorage.removeItem('exam_saved_state');
       sessionStorage.removeItem('prepmaster_explain_cache'); // clear tab cache
 
-      switchView('results-view', 'setup-view');
+      // Reset KBC Lifelines
+      lifelinesUsed = {
+        fiftyFifty: false,
+        expert: false,
+        flip: false
+      };
+      questionHiddenOptions = {};
+      if (typeof updateLifelineButtons === 'function') {
+        updateLifelineButtons();
+      }
+
+      // Clear DOM lists and previews
+      const questionsEditList = document.getElementById('questions-edit-list');
+      if (questionsEditList) questionsEditList.innerHTML = '';
+      const examSliderContainer = document.getElementById('exam-slider-container');
+      if (examSliderContainer) examSliderContainer.innerHTML = '';
+      const resultsReviewList = document.getElementById('results-review-list');
+      if (resultsReviewList) resultsReviewList.innerHTML = '';
+
+      // Clear files inputs and info labels
+      const qpFile = document.getElementById('qp-file-input');
+      if (qpFile) qpFile.value = '';
+      const akFile = document.getElementById('ak-file-input');
+      if (akFile) akFile.value = '';
+
+      const qpInfo = document.getElementById('qp-file-info');
+      if (qpInfo) {
+        qpInfo.textContent = '';
+        qpInfo.classList.add('hidden');
+      }
+      const akInfo = document.getElementById('ak-file-info');
+      if (akInfo) {
+        akInfo.textContent = '';
+        akInfo.classList.add('hidden');
+      }
+
+      const qpManual = document.getElementById('qp-manual-text');
+      if (qpManual) qpManual.value = '';
+      const akManual = document.getElementById('ak-manual-text');
+      if (akManual) akManual.value = '';
+
+      const aiExam = document.getElementById('ai-exam-name');
+      if (aiExam) aiExam.value = '';
+      const aiSubjects = document.getElementById('ai-subjects');
+      if (aiSubjects) aiSubjects.value = '';
+
+      // Go back to setup view, hiding whatever was the active view
+      const activeView = getActiveViewId() || 'results-view';
+      switchView(activeView, 'setup-view');
+      toggleFullscreen(false);
     }
 
     // --- GENERAL ROUTERS & TOASTS ---
@@ -4717,6 +4701,22 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       return '';
     }
 
+    function toggleFullscreen(enter = true) {
+      if (enter) {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.log("Fullscreen request rejected: ", err);
+          });
+        }
+      } else {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(err => {
+            console.log("Fullscreen exit rejected: ", err);
+          });
+        }
+      }
+    }
+
     function handleNewSetClick() {
       const activeView = getActiveViewId();
       if (activeView === 'exam-view') {
@@ -4764,6 +4764,11 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
     });
 
     function showToast(message, type = 'success') {
+      // Suppress non-critical toasts during active exam to avoid distraction
+      if (getActiveViewId() === 'exam-view' && (type === 'info' || type === 'success')) {
+        console.log('[Exam Toast Muted]', message);
+        return;
+      }
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
