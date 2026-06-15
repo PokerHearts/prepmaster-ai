@@ -74,6 +74,117 @@
       --selection-bg: #e2e8f0;
     }
 
+    [data-theme="kbc"] {
+      /* Kaun Banega Crorepati Game Show Theme */
+      --bg-primary: #05041a;
+      --bg-secondary: #0a0835;
+      --bg-surface: rgba(10, 8, 55, 0.75);
+      --bg-card: #0d0b48;
+      --bg-hover: #18146e;
+      --text-primary: #ffffff;
+      --text-secondary: #00f3ff;
+      --text-muted: #8c88bf;
+      --accent-color: #ffd700;
+      --accent-hover: #ffaa00;
+      --accent-light: rgba(255, 215, 0, 0.15);
+      --border-color: #1c1885;
+      --border-glow: rgba(0, 243, 255, 0.5);
+      --success: #00ff66;
+      --success-light: rgba(0, 255, 102, 0.15);
+      --error: #ff0055;
+      --error-light: rgba(255, 0, 85, 0.15);
+      --warning: #ffbf00;
+      --warning-light: rgba(255, 191, 0, 0.15);
+      --shadow-color: rgba(0, 0, 0, 0.8);
+      --glass-blur: 20px;
+      --card-shadow: 0 0 25px rgba(0, 243, 255, 0.25);
+      --card-border: 1px solid rgba(0, 243, 255, 0.3);
+      --selection-bg: #29249e;
+    }
+
+    /* KBC theme specific overrides */
+    [data-theme="kbc"] .bg-circle-1 {
+      background: radial-gradient(circle, #00f3ff 0%, transparent 70%) !important;
+      opacity: 0.2;
+    }
+    [data-theme="kbc"] .bg-circle-2 {
+      background: radial-gradient(circle, #ffd700 0%, transparent 70%) !important;
+      opacity: 0.15;
+    }
+    [data-theme="kbc"] .option-card {
+      background: linear-gradient(90deg, #0d0b48 0%, #110e5c 100%) !important;
+      border: 1.5px solid #00f3ff !important;
+      border-radius: 30px !important;
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.15) !important;
+      padding: 16px 28px !important;
+    }
+    [data-theme="kbc"] .option-card::before,
+    [data-theme="kbc"] .option-card::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      background: #00f3ff;
+      transform: translateY(-50%) rotate(45deg);
+      z-index: 1;
+    }
+    [data-theme="kbc"] .option-card::before {
+      left: -5px;
+    }
+    [data-theme="kbc"] .option-card::after {
+      right: -5px;
+    }
+    [data-theme="kbc"] .option-card:hover {
+      background: linear-gradient(90deg, #110e5c 0%, #1c1885 100%) !important;
+      border-color: #ffd700 !important;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4) !important;
+    }
+    [data-theme="kbc"] .option-card.selected {
+      background: linear-gradient(90deg, #b8860b 0%, #e6a100 100%) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 20px #ffaa00 !important;
+    }
+    [data-theme="kbc"] .option-card.selected .option-letter {
+      background: #ffffff !important;
+      color: #0d0b48 !important;
+      border-color: #ffffff !important;
+    }
+    [data-theme="kbc"] .option-letter {
+      background: #0d0b48 !important;
+      color: #ffd700 !important;
+      border: 1px solid #ffd700 !important;
+      box-shadow: 0 0 5px rgba(255, 215, 0, 0.3) !important;
+    }
+    [data-theme="kbc"] .logo span {
+      background: linear-gradient(135deg, #ffd700 0%, #00f3ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+    @media (min-width: 768px) {
+      [data-theme="kbc"] .options-stack {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px !important;
+      }
+    }
+    .lifeline-used {
+      opacity: 0.4 !important;
+      pointer-events: none !important;
+      border: 1px dashed var(--border-color) !important;
+      background: var(--bg-hover) !important;
+      color: var(--text-muted) !important;
+      text-decoration: line-through !important;
+      box-shadow: none !important;
+    }
+    #header-timer-box.timer-warning {
+      background: var(--error-light) !important;
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+      animation: pulse 1s infinite alternate;
+    }
+
     /* Reset & Base Layout */
     * {
       box-sizing: border-box;
@@ -1325,15 +1436,27 @@
         </svg>
         <span>PrepMaster AI</span>
       </div>
-      <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Light/Dark Theme">
-        <svg id="theme-sun-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
-        </svg>
-        <svg id="theme-moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-        </svg>
-      </button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div id="header-timer-box" class="hidden" style="display: none; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: var(--accent-light); border: 1px solid var(--accent-color); font-weight: 700; font-size: 0.95rem; font-family: var(--font-family-title); color: var(--text-primary);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span id="header-timer-text">30:00</span>
+        </div>
+        <button id="header-new-set-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; display: none; align-items: center; gap: 4px; border-radius: 8px;">➕ Create New Set</button>
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme">
+          <svg id="theme-sun-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg id="theme-moon-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+          <svg id="theme-kbc-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1362,7 +1485,7 @@
                 <p>Drag & drop your question sheet here</p>
                 <p class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">Supports PDF, PNG, JPG, TXT</p>
               </div>
-              <input type="file" id="qp-file-input" class="file-input" accept=".pdf,.txt,.png,.jpg,.jpeg">
+              <input type="file" id="qp-file-input" class="file-input" accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
             </div>
             <div id="qp-file-info" class="file-info hidden"></div>
 
@@ -1377,7 +1500,7 @@
           <!-- Answer Key -->
           <div class="glass-panel">
             <h3 class="mb-4">2. Answer Key</h3>
-            <p class="text-secondary mb-4" style="font-size: 0.9rem;">Upload or paste the correct answers. Matched automatically by question number.</p>
+            <p class="text-secondary mb-4" style="font-size: 0.9rem;">Upload or paste correct answers. <em>Don't have an answer key? Leave it empty and use "✨ Auto-Solve with AI" on the review screen!</em></p>
             <div class="drag-drop-zone" id="ak-drop-zone">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
@@ -1386,7 +1509,7 @@
                 <p>Drag & drop your answer key here</p>
                 <p class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">Supports TXT, CSV, PDF, PNG, JPG</p>
               </div>
-              <input type="file" id="ak-file-input" class="file-input" accept=".txt,.csv,.pdf,.png,.jpg,.jpeg">
+              <input type="file" id="ak-file-input" class="file-input" accept=".txt,.csv,.pdf,.png,.jpg,.jpeg" multiple>
             </div>
             <div id="ak-file-info" class="file-info hidden"></div>
 
@@ -1400,6 +1523,11 @@
         </div>
 
         <div class="glass-panel mt-4 text-center">
+          <div style="margin-bottom: 16px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--text-secondary);">
+              <input type="checkbox" id="merge-bilingual-cb" checked> Auto-merge bilingual/duplicate question numbers
+            </label>
+          </div>
           <button id="parse-proceed-btn" class="btn btn-primary" style="padding: 14px 40px; font-weight: 600;">Parse & Proceed</button>
           <div id="parse-loading" class="hidden mt-4">
             <div class="flex-center" style="gap: 12px;">
@@ -1421,7 +1549,7 @@
               <input type="text" id="ai-exam-name" class="form-control" placeholder="e.g., UGC NET Management, SAT Math">
             </div>
             <div class="form-group">
-              <label for="ai-subjects">Focus Subjects / Chapters:</label>
+              <label for="ai-subjects">Focus Subjects / Chapters (optional):</label>
               <input type="text" id="ai-subjects" class="form-control" placeholder="e.g., HRM, Financial Derivatives, Algebra">
             </div>
             <div class="form-group">
@@ -1501,6 +1629,7 @@
 
         <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
           <button id="pv-add-q-btn" class="btn btn-secondary">➕ Add Question</button>
+          <button id="pv-auto-solve-btn" class="btn btn-secondary" style="background: linear-gradient(135deg, var(--accent-color), var(--success)); color: white; border: none; font-weight: 500;">✨ Auto-Solve with AI</button>
           <button id="pv-export-btn" class="btn btn-secondary">💾 Export Set JSON</button>
           
           <!-- Save Set form block -->
@@ -1514,7 +1643,13 @@
         <div class="grid-2col" style="border-top: var(--card-border); padding-top: 20px;">
           <div class="form-group">
             <label for="exam-timer-val">Exam Duration (minutes):</label>
-            <input type="number" id="exam-timer-val" class="form-control" value="30" min="1" max="180">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <input type="number" id="exam-timer-val" class="form-control" value="30" min="1" max="180">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="exam-timer-off" style="width: 16px; height: 16px; cursor: pointer;">
+                <label for="exam-timer-off" style="margin-bottom: 0; cursor: pointer; font-size: 0.9rem; user-select: none;">Untimed Mode (No limit)</label>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label for="exam-layout-val">Navigation Layout Preference:</label>
@@ -1561,7 +1696,29 @@
 
             <!-- Navigation Grid -->
             <div class="nav-grid-title">Navigator</div>
-            <div class="nav-grid" id="exam-nav-grid"></div>
+            <div class="nav-grid" id="exam-nav-grid" style="margin-bottom: 20px;"></div>
+
+            <!-- KBC Lifelines Panel -->
+            <div id="kbc-lifelines-container" style="margin-bottom: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+              <div class="nav-grid-title" style="margin-top: 0; display: flex; align-items: center; justify-content: space-between;">
+                <span>✨ Game Lifelines</span>
+                <span id="lifelines-status-badge" style="font-size: 0.7rem; background: var(--accent-light); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent-color); font-weight: 600;">Active</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                <button id="lifeline-5050" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Removes 2 incorrect options">
+                  <span>🌓 50-50</span>
+                </button>
+                <button id="lifeline-expert" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Asks the AI/Expert for assistance">
+                  <span>🧠 Ask Expert</span>
+                </button>
+                <button id="lifeline-poll" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Simulates an Audience Poll">
+                  <span>📊 Audience Poll</span>
+                </button>
+                <button id="lifeline-flip" class="btn btn-secondary" style="padding: 10px 4px; font-size: 0.8rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" title="Flips the current question with a new one">
+                  <span>🔄 Flip Question</span>
+                </button>
+              </div>
+            </div>
 
             <button id="exam-submit-trigger" class="btn btn-danger" style="width: 100%; font-weight: 600; padding: 12px;">Submit Exam</button>
           </div>
@@ -1704,6 +1861,54 @@
     </div>
   </dialog>
 
+  <!-- DIALOG: KBC ASK EXPERT -->
+  <dialog id="kbc-expert-dialog" style="max-width: 550px; border: 1.5px solid var(--accent-color); box-shadow: var(--card-shadow);">
+    <div class="dialog-header">
+      <span class="dialog-title" style="color: var(--accent-color); font-family: var(--font-family-title); display: flex; align-items: center; gap: 8px;">
+        <span>🧠 Ask the Expert (AI Help)</span>
+      </span>
+      <button class="dialog-close" id="kbc-expert-close">&times;</button>
+    </div>
+    <div style="padding: 10px 0;">
+      <div class="flex-center" id="kbc-expert-loading" style="margin: 20px 0; flex-direction: column; gap: 12px;">
+        <div class="spinner"></div>
+        <span style="color: var(--text-secondary); font-size: 0.9rem;">Consulting the expert...</span>
+      </div>
+      <div id="kbc-expert-content" class="hidden">
+        <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-primary);">
+          The Expert's Recommendation: Option <span id="kbc-expert-choice" style="color: var(--success); font-size: 1.3rem; font-weight: 700; border: 1px solid var(--success); padding: 2px 10px; border-radius: 6px; background: var(--success-light); margin-left: 6px;">A</span>
+        </p>
+        <div class="glass-panel" style="padding: 16px; font-size: 0.95rem; line-height: 1.6; border-left: 4px solid var(--accent-color); background: rgba(255, 215, 0, 0.05); margin-top: 15px;">
+          <strong style="display: block; margin-bottom: 6px; color: var(--accent-color);">Expert Explanation:</strong>
+          <span id="kbc-expert-explanation" style="color: var(--text-primary);">Explanation text goes here.</span>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button id="kbc-expert-ok-btn" class="btn btn-primary" style="padding: 8px 24px;">Thank you, Expert!</button>
+    </div>
+  </dialog>
+
+  <!-- DIALOG: KBC AUDIENCE POLL -->
+  <dialog id="kbc-poll-dialog" style="max-width: 500px; border: 1.5px solid var(--accent-color); box-shadow: var(--card-shadow);">
+    <div class="dialog-header">
+      <span class="dialog-title" style="color: var(--text-secondary); font-family: var(--font-family-title); display: flex; align-items: center; gap: 8px;">
+        <span>📊 Audience Poll Results</span>
+      </span>
+      <button class="dialog-close" id="kbc-poll-close">&times;</button>
+    </div>
+    <div style="padding: 15px 0;">
+      <p style="margin-bottom: 20px; color: var(--text-primary); font-size: 0.95rem;">The audience has voted! Here are the results for the current question:</p>
+      
+      <div id="kbc-poll-chart-container" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Dynamic poll bars rendered here -->
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button id="kbc-poll-ok-btn" class="btn btn-primary" style="padding: 8px 24px;">Close Poll</button>
+    </div>
+  </dialog>
+
   <!-- DIALOG: SETTINGS / EXAM CONFIGURATION -->
   <dialog id="exam-config-dialog">
     <div class="dialog-header">
@@ -1778,6 +1983,15 @@
     let examEndTime = null;
     let autoSaveInterval = null;
     let isTimerPaused = false;
+    
+    // KBC Lifelines states
+    let lifelinesUsed = {
+      fiftyFifty: false,
+      expert: false,
+      poll: false,
+      flip: false
+    };
+    let questionHiddenOptions = {}; // { qIdx: [letters] }
     
     // Provider preset details mapping
     const PROVIDER_PRESETS = {
@@ -2073,6 +2287,7 @@
 
       // Question list editing actions
       document.getElementById('pv-add-q-btn').addEventListener('click', handlePreviewAddQuestion);
+      document.getElementById('pv-auto-solve-btn').addEventListener('click', handleAutoSolveWithAI);
       document.getElementById('pv-export-btn').addEventListener('click', handleExportSetJSON);
       document.getElementById('pv-save-btn').addEventListener('click', handleSaveGeneratedSet);
       document.getElementById('pv-back-btn').addEventListener('click', () => {
@@ -2109,6 +2324,9 @@
       // Open Config Modal
       document.getElementById('open-config-btn').addEventListener('click', openSettingsModal);
 
+      // Create New Set Header Button
+      document.getElementById('header-new-set-btn').addEventListener('click', handleNewSetClick);
+
       // Preset change listener
       document.getElementById('settings-preset').addEventListener('change', (e) => {
         refreshUIForPreset(e.target.value, false);
@@ -2136,6 +2354,29 @@
         document.getElementById('exam-config-dialog').close();
         showToast("Settings saved successfully.", "success");
       });
+
+      // KBC Lifelines listeners
+      document.getElementById('lifeline-5050').addEventListener('click', useFiftyFiftyLifeline);
+      document.getElementById('lifeline-expert').addEventListener('click', useAskExpertLifeline);
+      document.getElementById('lifeline-poll').addEventListener('click', useAudiencePollLifeline);
+      document.getElementById('lifeline-flip').addEventListener('click', useFlipQuestionLifeline);
+
+      // KBC Lifelines Dialog close buttons
+      document.getElementById('kbc-expert-close').addEventListener('click', () => document.getElementById('kbc-expert-dialog').close());
+      document.getElementById('kbc-expert-ok-btn').addEventListener('click', () => document.getElementById('kbc-expert-dialog').close());
+      document.getElementById('kbc-poll-close').addEventListener('click', () => document.getElementById('kbc-poll-dialog').close());
+      document.getElementById('kbc-poll-ok-btn').addEventListener('click', () => document.getElementById('kbc-poll-dialog').close());
+
+      // Untimed Mode checkbox change listener
+      document.getElementById('exam-timer-off').addEventListener('change', (e) => {
+        const timerInput = document.getElementById('exam-timer-val');
+        timerInput.disabled = e.target.checked;
+        if (e.target.checked) {
+          timerInput.style.opacity = '0.5';
+        } else {
+          timerInput.style.opacity = '1';
+        }
+      });
     }
 
     function savePreferences() {
@@ -2155,23 +2396,33 @@
       const toggle = document.getElementById('theme-toggle-btn');
       const sun = document.getElementById('theme-sun-icon');
       const moon = document.getElementById('theme-moon-icon');
+      const kbc = document.getElementById('theme-kbc-icon');
 
       const applyTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
         preferences.theme = theme;
         savePreferences();
+        
+        sun.classList.add('hidden');
+        moon.classList.add('hidden');
+        kbc.classList.add('hidden');
+        
         if (theme === 'light') {
-          sun.classList.remove('hidden');
-          moon.classList.add('hidden');
-        } else {
-          sun.classList.add('hidden');
           moon.classList.remove('hidden');
+        } else if (theme === 'dark') {
+          kbc.classList.remove('hidden');
+        } else if (theme === 'kbc') {
+          sun.classList.remove('hidden');
         }
       };
 
       applyTheme(preferences.theme);
       toggle.addEventListener('click', () => {
-        applyTheme(preferences.theme === 'dark' ? 'light' : 'dark');
+        let nextTheme = 'dark';
+        if (preferences.theme === 'dark') nextTheme = 'kbc';
+        else if (preferences.theme === 'kbc') nextTheme = 'light';
+        else if (preferences.theme === 'light') nextTheme = 'dark';
+        applyTheme(nextTheme);
       });
     }
 
@@ -2210,53 +2461,74 @@
         { id: 'qp-drop-zone', inputId: 'qp-file-input', infoId: 'qp-file-info' },
         { id: 'ak-drop-zone', inputId: 'ak-file-input', infoId: 'ak-file-info' }
       ];
-
+ 
       zones.forEach(z => {
         const dropZone = document.getElementById(z.id);
         const input = document.getElementById(z.inputId);
         const info = document.getElementById(z.infoId);
-
+ 
         ['dragenter', 'dragover'].forEach(name => {
           dropZone.addEventListener(name, (e) => {
             e.preventDefault();
             dropZone.classList.add('dragover');
           });
         });
-
+ 
         ['dragleave', 'drop'].forEach(name => {
           dropZone.addEventListener(name, (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
           });
         });
-
+ 
         dropZone.addEventListener('drop', (e) => {
           const files = e.dataTransfer.files;
           if (files.length > 0) {
-            if (files[0].size > 5 * 1024 * 1024) {
-              showToast("Error: File size exceeds the 5MB limit.", "error");
+            let tooLarge = false;
+            for (let i = 0; i < files.length; i++) {
+              if (files[i].size > 20 * 1024 * 1024) {
+                tooLarge = true;
+                break;
+              }
+            }
+            if (tooLarge) {
+              showToast("Error: One or more files exceed the 20MB limit.", "error");
               return;
             }
             input.files = files;
-            updateFileInfo(files[0], info);
+            updateFileInfo(files, info);
           }
         });
-
+ 
         input.addEventListener('change', (e) => {
           if (input.files.length > 0) {
-            if (input.files[0].size > 5 * 1024 * 1024) {
-              showToast("Error: File size exceeds the 5MB limit.", "error");
+            let tooLarge = false;
+            for (let i = 0; i < input.files.length; i++) {
+              if (input.files[i].size > 20 * 1024 * 1024) {
+                tooLarge = true;
+                break;
+              }
+            }
+            if (tooLarge) {
+              showToast("Error: One or more files exceed the 20MB limit.", "error");
               input.value = '';
               return;
             }
-            updateFileInfo(input.files[0], info);
+            updateFileInfo(input.files, info);
           }
         });
       });
     }
-
-    function updateFileInfo(file, infoEl) {
-      infoEl.textContent = `📄 Selected: ${escapeHTML(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+ 
+    function updateFileInfo(files, infoEl) {
+      if (files.length === 1) {
+        const file = files[0];
+        infoEl.textContent = `📄 Selected: ${escapeHTML(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+      } else {
+        const names = Array.from(files).map(f => f.name).join(', ');
+        const totalSize = Array.from(files).reduce((acc, f) => acc + f.size, 0);
+        infoEl.textContent = `📄 Selected ${files.length} files: ${escapeHTML(names)} (${(totalSize / 1024).toFixed(1)} KB)`;
+      }
       infoEl.classList.remove('hidden');
     }
 
@@ -2447,6 +2719,65 @@
       return parsedQuestions;
     }
 
+    // Merge bilingual or duplicate question numbers
+    function mergeBilingualQuestions(list) {
+      const uniqueQuestions = [];
+      const map = {};
+
+      list.forEach(q => {
+        const num = q.questionNumber;
+        if (!map[num]) {
+          // Clone and add
+          const clone = JSON.parse(JSON.stringify(q));
+          map[num] = clone;
+          uniqueQuestions.push(clone);
+        } else {
+          const existing = map[num];
+          
+          // Merge Question Text (avoid duplicates)
+          const cleanExistingText = existing.questionText.trim();
+          const cleanNewText = q.questionText.trim();
+          if (cleanExistingText !== cleanNewText && !cleanExistingText.includes(cleanNewText)) {
+            existing.questionText = cleanExistingText + "\n\n" + cleanNewText;
+          }
+          
+          // Merge Options key-by-key
+          if (existing.options && q.options) {
+            const allKeys = new Set([...Object.keys(existing.options), ...Object.keys(q.options)]);
+            allKeys.forEach(k => {
+              const val1 = (existing.options[k] || '').trim();
+              const val2 = (q.options[k] || '').trim();
+              if (val1 && val2) {
+                if (val1.toLowerCase() === val2.toLowerCase()) {
+                  existing.options[k] = val1; // identical option content, keep one
+                } else {
+                  existing.options[k] = `${val1} / ${val2}`;
+                }
+              } else {
+                existing.options[k] = val1 || val2;
+              }
+            });
+          }
+          
+          // Merge explanation if different
+          if (q.explanation && q.explanation.trim()) {
+            if (!existing.explanation) {
+              existing.explanation = q.explanation;
+            } else if (!existing.explanation.includes(q.explanation)) {
+              existing.explanation += " " + q.explanation;
+            }
+          }
+          
+          // If correct answer is set in duplicate but not in existing
+          if (!existing.correctAnswer && q.correctAnswer) {
+            existing.correctAnswer = q.correctAnswer;
+          }
+        }
+      });
+
+      return uniqueQuestions;
+    }
+
     // Answer Key Parser supporting keys: 1.A, 1=A, Q1. A, 1) A, 1-A, CSV 1,A
     function parseAnswerKeySheet(text) {
       const normalized = text.trim();
@@ -2532,39 +2863,68 @@
       loader.classList.remove('hidden');
       
       try {
-        let qText = '';
-        let aText = '';
-        
-        // Extract QP
+        let allParsedQuestions = [];
+        let globalQuestionCount = 0;
+        const shouldMerge = document.getElementById('merge-bilingual-cb').checked;
+
         if (qpInput.files.length > 0) {
-          qText = await extractTextFromFile(qpInput.files[0], 'parse-progress-text');
-          document.getElementById('qp-manual-text').value = qText;
-        } else {
-          qText = qpManual;
-        }
-        
-        // Extract AK
-        if (akInput.files.length > 0) {
-          aText = await extractTextFromFile(akInput.files[0], 'parse-progress-text');
-          document.getElementById('ak-manual-text').value = aText;
-        } else {
-          aText = akManual;
-        }
-        
-        // Parsing
-        questions = parseQuestionSheet(qText);
-        answersMatched = parseAnswerKeySheet(aText);
-        
-        if (questions.length === 0) {
-          throw new Error("No numbered questions parsed. Check formatting.");
-        }
-        
-        // Match logic
-        questions.forEach(q => {
-          if (answersMatched[q.questionNumber]) {
-            q.correctAnswer = answersMatched[q.questionNumber];
+          const qpFiles = Array.from(qpInput.files).sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+          const akFiles = Array.from(akInput.files).sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+          
+          for (let i = 0; i < qpFiles.length; i++) {
+            progressText.textContent = `Extracting Question Paper ${i + 1} of ${qpFiles.length}: ${qpFiles[i].name}...`;
+            const qText = await extractTextFromFile(qpFiles[i], 'parse-progress-text');
+            
+            let aText = '';
+            if (i < akFiles.length) {
+              progressText.textContent = `Extracting Answer Key ${i + 1} of ${akFiles.length}: ${akFiles[i].name}...`;
+              aText = await extractTextFromFile(akFiles[i], 'parse-progress-text');
+            }
+            
+            const parsedQs = parseQuestionSheet(qText);
+            const answersMatchedLocal = parseAnswerKeySheet(aText);
+            
+            if (parsedQs.length > 0) {
+              // Apply bilingual merge local to this set if checked
+              let setQs = shouldMerge ? mergeBilingualQuestions(parsedQs) : parsedQs;
+              
+              // Renumber and match answers with offset
+              setQs.forEach((q, idx) => {
+                const originalNum = q.questionNumber;
+                const newNum = globalQuestionCount + idx + 1;
+                q.questionNumber = newNum;
+                q.sourcePaper = qpFiles[i].name;
+                
+                if (answersMatchedLocal[originalNum]) {
+                  q.correctAnswer = answersMatchedLocal[originalNum];
+                }
+              });
+              
+              globalQuestionCount += setQs.length;
+              allParsedQuestions = allParsedQuestions.concat(setQs);
+            }
           }
-        });
+        } else {
+          // Process manually pasted text
+          progressText.textContent = "Parsing pasted question sheet...";
+          const parsedQs = parseQuestionSheet(qpManual);
+          const answersMatchedLocal = parseAnswerKeySheet(akManual);
+          
+          let setQs = shouldMerge ? mergeBilingualQuestions(parsedQs) : parsedQs;
+          setQs.forEach(q => {
+            q.sourcePaper = "Pasted Text";
+            if (answersMatchedLocal[q.questionNumber]) {
+              q.correctAnswer = answersMatchedLocal[q.questionNumber];
+            }
+          });
+          allParsedQuestions = setQs;
+        }
+        
+        if (allParsedQuestions.length === 0) {
+          throw new Error("No numbered questions parsed from the input. Check formatting.");
+        }
+        
+        questions = allParsedQuestions;
         
         // Refresh Review view
         buildPreviewEditorList();
@@ -2596,8 +2956,8 @@
       const difficulty = document.getElementById('ai-difficulty').value;
       const style = document.getElementById('ai-style').value;
       
-      if (!examName || !subjects) {
-        showToast("Please fill in both Exam Name and Focus Subjects.", "error");
+      if (!examName) {
+        showToast("Please fill in the Exam Name / Topic.", "error");
         return;
       }
 
@@ -2605,8 +2965,9 @@
       loader.classList.remove('hidden');
       
       const styleDesc = style === 'case-study' ? "Include case-study based scenarios for some questions." : "Standard MCQ style.";
+      const focusText = subjects ? ` focusing on ${subjects}` : '';
       
-      const prompt = `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName} focusing on ${subjects}. ${styleDesc}
+      const prompt = `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName}${focusText}. ${styleDesc}
 Format exactly as a valid JSON array:
 [
   {
@@ -2759,6 +3120,100 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       }
     }
 
+    async function handleAutoSolveWithAI() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        showToast("🔒 API key required. Please enter an API key in the settings bar at the top of the page.", "error");
+        openSettingsModal();
+        return;
+      }
+
+      let questionsToSolve = questions.filter(q => !q.correctAnswer || q.correctAnswer.trim() === '');
+      if (questionsToSolve.length === 0) {
+        if (confirm("All questions already have correct answers set. Would you like AI to re-solve all questions and overwrite them?")) {
+          questionsToSolve = questions;
+        } else {
+          return;
+        }
+      }
+
+      const btn = document.getElementById('pv-auto-solve-btn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `⏳ Solving ${questionsToSolve.length} Questions...`;
+
+      // Build text of questions to be solved
+      const questionListText = questionsToSolve.map(q => {
+        let opts = '';
+        if (q.options) {
+          opts = Object.entries(q.options).map(([k, v]) => `${k}) ${v}`).join('\n');
+        }
+        return `Question ${q.questionNumber}:\n${q.questionText}\nOptions:\n${opts}`;
+      }).join('\n\n');
+
+      const prompt = `You are given a list of multiple-choice questions. Solve each question and identify the correct option letter (A, B, C, or D).
+For each question, provide the correct option letter and a concise explanation (1-2 sentences).
+Format the response strictly as a JSON array of objects, with no additional text or markdown formatting:
+[
+  {
+    "questionNumber": 1,
+    "correctAnswer": "A",
+    "explanation": "..."
+  }
+]
+
+Questions:
+${questionListText}`;
+
+      try {
+        const systemPrompt = "You are a helpful and expert academic tutor that solves multiple-choice questions and outputs valid JSON arrays.";
+        const resultText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
+        
+        let jsonText = resultText.trim();
+        if (jsonText.startsWith('```')) {
+          jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+        
+        const solvedAnswers = JSON.parse(jsonText);
+        if (!Array.isArray(solvedAnswers)) {
+          throw new Error("AI did not return a valid array of answers.");
+        }
+
+        // Map solved answers back to our questions state
+        let matchedCount = 0;
+        solvedAnswers.forEach(item => {
+          const qNum = parseInt(item.questionNumber, 10);
+          const ans = (item.correctAnswer || '').trim().toUpperCase();
+          const exp = (item.explanation || '').trim();
+          
+          if (!isNaN(qNum) && /^[A-E]$/.test(ans)) {
+            const targetQ = questions.find(q => q.questionNumber === qNum);
+            if (targetQ) {
+              targetQ.correctAnswer = ans;
+              if (exp) {
+                // Pre-save explanation to cache
+                saveExplanationToCache(qNum, exp);
+                // Also assign explanation to question object
+                targetQ.explanation = exp;
+              }
+              matchedCount++;
+            }
+          }
+        });
+
+        buildPreviewEditorList();
+        updatePreviewAnalytics();
+        
+        showToast(`AI successfully solved ${matchedCount} questions!`, "success");
+
+      } catch (err) {
+        showToast("Auto-solve failed: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
     // --- PREVIEW EDITOR PANEL ---
 
     function buildPreviewEditorList() {
@@ -2789,9 +3244,11 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
           correctOptionsMarkup += `<option value="${k}" ${selected}>${k}</option>`;
         });
 
+        const sourceText = q.sourcePaper ? `<span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 10px;">📄 Source: ${escapeHTML(q.sourcePaper)}</span>` : '';
+
         card.innerHTML = `
           <div class="q-card-header">
-            <span class="q-card-title">Question Number: <input type="number" class="form-control q-num-edit" style="width: 70px; display:inline-block; padding: 4px 8px; min-height:auto;" value="${q.questionNumber}"></span>
+            <span class="q-card-title">Question Number: <input type="number" class="form-control q-num-edit" style="width: 70px; display:inline-block; padding: 4px 8px; min-height:auto;" value="${q.questionNumber}">${sourceText}</span>
             <button class="btn btn-danger btn-icon-only remove-q-btn" aria-label="Delete question">🗑️</button>
           </div>
           
@@ -3007,10 +3464,26 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         return;
       }
       
+      // Reset KBC Lifelines
+      lifelinesUsed = {
+        fiftyFifty: false,
+        expert: false,
+        poll: false,
+        flip: false
+      };
+      questionHiddenOptions = {};
+      updateLifelineButtons();
+
       // Load duration parameters
-      const mins = parseInt(document.getElementById('exam-timer-val').value, 10) || 30;
-      totalExamSeconds = mins * 60;
-      secondsRemaining = totalExamSeconds;
+      const isUntimed = document.getElementById('exam-timer-off').checked;
+      if (isUntimed) {
+        totalExamSeconds = 0;
+        secondsRemaining = 0;
+      } else {
+        const mins = parseInt(document.getElementById('exam-timer-val').value, 10) || 30;
+        totalExamSeconds = mins * 60;
+        secondsRemaining = totalExamSeconds;
+      }
       isTimerPaused = false;
       
       userSelections = {};
@@ -3046,30 +3519,56 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       if (timerInterval) clearInterval(timerInterval);
       
       const text = document.getElementById('exam-timer-text');
+      const headerText = document.getElementById('header-timer-text');
       const box = document.getElementById('exam-timer-box');
-      box.classList.remove('timer-warning');
+      const headerBox = document.getElementById('header-timer-box');
+      
+      if (box) box.classList.remove('timer-warning');
+      if (headerBox) headerBox.classList.remove('timer-warning');
+
+      const isUntimed = (totalExamSeconds === 0);
 
       const updateDisplay = () => {
-        const m = Math.floor(secondsRemaining / 60);
-        const s = secondsRemaining % 60;
-        text.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        
-        if (secondsRemaining <= 300) {
-          box.classList.add('timer-warning');
+        let displayStr = "";
+        if (isUntimed) {
+          const m = Math.floor(secondsRemaining / 60);
+          const s = secondsRemaining % 60;
+          displayStr = `Elapsed: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        } else {
+          const m = Math.floor(secondsRemaining / 60);
+          const s = secondsRemaining % 60;
+          displayStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          
+          if (secondsRemaining <= 300) {
+            if (box) box.classList.add('timer-warning');
+            if (headerBox) headerBox.classList.add('timer-warning');
+          } else {
+            if (box) box.classList.remove('timer-warning');
+            if (headerBox) headerBox.classList.remove('timer-warning');
+          }
         }
+        
+        if (text) text.textContent = displayStr;
+        if (headerText) headerText.textContent = displayStr;
       };
 
       updateDisplay();
 
       timerInterval = setInterval(() => {
         if (!isTimerPaused) {
-          secondsRemaining--;
-          updateDisplay();
-          
-          if (secondsRemaining <= 0) {
-            clearInterval(timerInterval);
-            showToast("Time is up! Submitting your answers.", "error");
-            submitExamFinal();
+          if (isUntimed) {
+            secondsRemaining++;
+            updateDisplay();
+          } else {
+            secondsRemaining--;
+            updateDisplay();
+            
+            if (secondsRemaining <= 0) {
+              clearInterval(timerInterval);
+              showToast("Time is up! Submitting your answers.", "error");
+              alert("⏰ Time is Up!\n\nYour exam duration has ended. Your answers will now be automatically graded and submitted.");
+              submitExamFinal();
+            }
           }
         }
       }, 1000);
@@ -3087,6 +3586,345 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       document.getElementById('exam-timer-pause-btn').classList.remove('hidden');
       document.getElementById('exam-timer-resume-btn').classList.add('hidden');
       showToast("Timer resumed.", "info");
+    }
+
+    // --- KBC LIFELINES ENGINE ---
+
+    function updateLifelineButtons() {
+      const btn5050 = document.getElementById('lifeline-5050');
+      const btnExpert = document.getElementById('lifeline-expert');
+      const btnPoll = document.getElementById('lifeline-poll');
+      const btnFlip = document.getElementById('lifeline-flip');
+      
+      if (!btn5050 || !btnExpert || !btnPoll || !btnFlip) return;
+
+      if (lifelinesUsed.fiftyFifty) {
+        btn5050.classList.add('lifeline-used');
+        btn5050.title = "50-50 lifeline already used.";
+      } else {
+        btn5050.classList.remove('lifeline-used');
+      }
+
+      if (lifelinesUsed.expert) {
+        btnExpert.classList.add('lifeline-used');
+        btnExpert.title = "Ask the Expert lifeline already used.";
+      } else {
+        btnExpert.classList.remove('lifeline-used');
+      }
+
+      if (lifelinesUsed.poll) {
+        btnPoll.classList.add('lifeline-used');
+        btnPoll.title = "Audience Poll lifeline already used.";
+      } else {
+        btnPoll.classList.remove('lifeline-used');
+      }
+
+      if (lifelinesUsed.flip) {
+        btnFlip.classList.add('lifeline-used');
+        btnFlip.title = "Flip Question lifeline already used.";
+      } else {
+        btnFlip.classList.remove('lifeline-used');
+      }
+    }
+
+    function useFiftyFiftyLifeline() {
+      if (lifelinesUsed.fiftyFifty) {
+        showToast("50-50 lifeline has already been used.", "warning");
+        return;
+      }
+      
+      const q = questions[currentQuestionIdx];
+      if (!q || !q.options) return;
+
+      const correct = (q.correctAnswer || "A").toUpperCase();
+      const wrongOptions = Object.keys(q.options).filter(l => l !== correct);
+      
+      if (wrongOptions.length < 2) {
+        showToast("Not enough options to use 50-50.", "warning");
+        return;
+      }
+
+      // Pick 2 random wrong options to hide
+      const toHide = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
+      questionHiddenOptions[currentQuestionIdx] = toHide;
+      
+      lifelinesUsed.fiftyFifty = true;
+      updateLifelineButtons();
+      
+      // Re-render current question
+      const layout = document.getElementById('exam-layout-val').value;
+      if (layout === 'slider') {
+        renderSliderQuestion();
+      } else {
+        renderScrollQuestions();
+      }
+      
+      showToast("🌓 50-50 Activated! Two incorrect options removed.", "success");
+      saveActiveExamState();
+    }
+
+    async function useAskExpertLifeline() {
+      if (lifelinesUsed.expert) {
+        showToast("Ask the Expert lifeline has already been used.", "warning");
+        return;
+      }
+
+      const q = questions[currentQuestionIdx];
+      if (!q) return;
+
+      lifelinesUsed.expert = true;
+      updateLifelineButtons();
+
+      const dialog = document.getElementById('kbc-expert-dialog');
+      const loader = document.getElementById('kbc-expert-loading');
+      const content = document.getElementById('kbc-expert-content');
+      const choiceSpan = document.getElementById('kbc-expert-choice');
+      const expSpan = document.getElementById('kbc-expert-explanation');
+
+      choiceSpan.textContent = q.correctAnswer || "A";
+
+      // If we already have a rich explanation, show it immediately
+      if (q.explanation && q.explanation.trim().length > 5) {
+        loader.classList.add('hidden');
+        content.classList.remove('hidden');
+        expSpan.textContent = q.explanation;
+        dialog.showModal();
+        saveActiveExamState();
+        return;
+      }
+
+      // Otherwise try to consult dynamic AI
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        loader.classList.add('hidden');
+        content.classList.remove('hidden');
+        expSpan.textContent = "The expert recommends this option based on course concepts and correct syllabus keys. (Enter an API key in the top settings bar for a dynamic AI explanation!)";
+        dialog.showModal();
+        saveActiveExamState();
+        return;
+      }
+
+      loader.classList.remove('hidden');
+      content.classList.add('hidden');
+      dialog.showModal();
+
+      try {
+        const sysPrompt = "You are an expert academic tutor. Provide the correct option and a brief explanation.";
+        const userPrompt = `Question: ${q.questionText}
+Options: ${JSON.stringify(q.options)}
+Which option is correct, and why? Provide a JSON response: {"correctAnswer": "${q.correctAnswer}", "explanation": "..."}`;
+        
+        const responseText = await callAiCompletions(userPrompt, sysPrompt, 2, 500);
+        let parsed = null;
+        try {
+          let cleanJson = responseText.trim();
+          if (cleanJson.startsWith('```')) {
+            cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+          }
+          parsed = JSON.parse(cleanJson);
+        } catch(e) {}
+
+        loader.classList.add('hidden');
+        content.classList.remove('hidden');
+
+        if (parsed && parsed.explanation) {
+          expSpan.textContent = parsed.explanation;
+          if (parsed.correctAnswer) {
+            choiceSpan.textContent = parsed.correctAnswer.toUpperCase();
+          }
+        } else {
+          expSpan.textContent = responseText.replace(/[\{\}\"]/g, '').trim() || "Option " + q.correctAnswer + " is correct based on academic curriculum guidelines.";
+        }
+      } catch (err) {
+        loader.classList.add('hidden');
+        content.classList.remove('hidden');
+        expSpan.textContent = "The expert recommends option " + q.correctAnswer + " as the most factually accurate choice. (Error consulting dynamic AI: " + err.message + ")";
+      }
+      
+      saveActiveExamState();
+    }
+
+    function useAudiencePollLifeline() {
+      if (lifelinesUsed.poll) {
+        showToast("Audience Poll lifeline has already been used.", "warning");
+        return;
+      }
+
+      const q = questions[currentQuestionIdx];
+      if (!q || !q.options) return;
+
+      const correct = (q.correctAnswer || "A").toUpperCase();
+      const hidden = questionHiddenOptions[currentQuestionIdx] || [];
+      const letters = Object.keys(q.options);
+
+      let percentages = {};
+      letters.forEach(letter => percentages[letter] = 0);
+
+      const visibleWrong = letters.filter(l => l !== correct && !hidden.includes(l));
+
+      if (visibleWrong.length === 0) {
+        percentages[correct] = 100;
+      } else {
+        // Generate random score for correct answer
+        let correctPercent = Math.floor(Math.random() * 20) + 55; // 55% to 74%
+        percentages[correct] = correctPercent;
+
+        let remaining = 100 - correctPercent;
+        for (let i = 0; i < visibleWrong.length - 1; i++) {
+          let share = Math.floor(Math.random() * (remaining / 1.5));
+          percentages[visibleWrong[i]] = share;
+          remaining -= share;
+        }
+        percentages[visibleWrong[visibleWrong.length - 1]] = remaining;
+      }
+
+      // Render chart
+      const container = document.getElementById('kbc-poll-chart-container');
+      container.innerHTML = '';
+
+      Object.entries(percentages).forEach(([letter, pct]) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '12px';
+
+        row.innerHTML = `
+          <div style="width: 24px; font-weight: 700; color: var(--text-secondary);">${letter}:</div>
+          <div class="progress-bar-outer" style="flex: 1; height: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 0;">
+            <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--success)); border-radius: 9px; transition: width 0.8s ease-in-out;"></div>
+          </div>
+          <div style="width: 45px; text-align: right; font-weight: 600; color: var(--text-primary);">${pct}%</div>
+        `;
+        container.appendChild(row);
+      });
+
+      lifelinesUsed.poll = true;
+      updateLifelineButtons();
+      
+      document.getElementById('kbc-poll-dialog').showModal();
+      saveActiveExamState();
+    }
+
+    async function useFlipQuestionLifeline() {
+      if (lifelinesUsed.flip) {
+        showToast("Flip Question lifeline has already been used.", "warning");
+        return;
+      }
+
+      if (!confirm("Are you sure you want to flip this question? It will replace the current question with a new alternative generated by the AI.")) {
+        return;
+      }
+
+      const q = questions[currentQuestionIdx];
+      if (!q) return;
+
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        showToast("🔒 API key required. Please enter an API key in the settings bar at the top of the page to flip the question.", "error");
+        openSettingsModal();
+        return;
+      }
+
+      // Show loader in current question text area
+      const badge = document.getElementById('exam-q-badge');
+      const qText = document.getElementById('exam-q-text');
+      const stack = document.getElementById('exam-options-stack');
+
+      const originalBadge = badge.textContent;
+      const originalText = qText.textContent;
+      const originalStackHtml = stack.innerHTML;
+
+      badge.textContent = "🔄 Flipping...";
+      qText.innerHTML = `
+        <div class="flex-center" style="flex-direction: column; gap: 16px; padding: 40px 20px;">
+          <div class="spinner"></div>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;">Generating alternative question from AI...</p>
+        </div>
+      `;
+      stack.innerHTML = '';
+
+      try {
+        const examName = document.getElementById('ai-exam-name').value.trim() || "General Knowledge";
+        const subjects = document.getElementById('ai-subjects').value.trim();
+        const difficulty = document.getElementById('ai-difficulty').value || "medium";
+        const focusText = subjects ? ` focusing on ${subjects}` : '';
+
+        const sysPrompt = "You are an expert academic examiner. Output exactly one valid JSON object.";
+        const prompt = `Generate exactly ONE new ${difficulty} level multiple choice question for ${examName}${focusText}.
+Format exactly as a valid JSON object:
+{
+  "questionNumber": ${q.questionNumber},
+  "questionText": "...",
+  "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+  "correctAnswer": "...",
+  "explanation": "..."
+}
+Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.`;
+
+        const resultText = await callAiCompletions(prompt, sysPrompt, 3, 1000);
+        
+        let jsonText = resultText.trim();
+        if (jsonText.startsWith('```')) {
+          jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+        
+        const parsed = JSON.parse(jsonText);
+        
+        if (!parsed.questionText || !parsed.options) {
+          throw new Error("Invalid question structure returned by AI.");
+        }
+
+        // Normalize options
+        const optionsObj = {};
+        if (Array.isArray(parsed.options)) {
+          parsed.options.forEach(opt => {
+            const letterMatch = opt.match(/^\s*([A-D])[\)\.\s-]\s*(.+)$/i);
+            if (letterMatch) {
+              optionsObj[letterMatch[1].toUpperCase()] = letterMatch[2].trim();
+            }
+          });
+        } else if (typeof parsed.options === 'object') {
+          Object.entries(parsed.options).forEach(([k, v]) => {
+            optionsObj[k.toUpperCase()] = v.trim();
+          });
+        }
+
+        const newQ = {
+          questionNumber: q.questionNumber,
+          questionText: parsed.questionText,
+          options: (Object.keys(optionsObj).length >= 2) ? optionsObj : { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
+          correctAnswer: (parsed.correctAnswer || "A").substring(0, 1).toUpperCase(),
+          explanation: parsed.explanation || "",
+          sourcePaper: q.sourcePaper || "Alternative Pool"
+        };
+
+        // Replace in questions array
+        questions[currentQuestionIdx] = newQ;
+        
+        // Clear user selection
+        delete userSelections[q.questionNumber];
+        
+        lifelinesUsed.flip = true;
+        updateLifelineButtons();
+        
+        showToast("🔄 Question flipped successfully!", "success");
+      } catch (err) {
+        showToast("Failed to flip question: " + err.message, "error");
+        badge.textContent = originalBadge;
+        qText.textContent = originalText;
+        stack.innerHTML = originalStackHtml;
+      } finally {
+        // Re-render
+        const layout = document.getElementById('exam-layout-val').value;
+        if (layout === 'slider') {
+          renderSliderQuestion();
+        } else {
+          renderScrollQuestions();
+        }
+        buildExamNavGrid();
+        updateExamProgress();
+        saveActiveExamState();
+      }
     }
 
     // Auto-Save active state to localStorage every 30 seconds
@@ -3107,7 +3945,9 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         secondsRemaining,
         totalExamSeconds,
         examStartTime,
-        displayPref: document.getElementById('exam-layout-val').value
+        displayPref: document.getElementById('exam-layout-val').value,
+        lifelinesUsed,
+        questionHiddenOptions
       };
       
       localStorage.setItem('exam_saved_state', JSON.stringify(state));
@@ -3134,6 +3974,15 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         secondsRemaining = state.secondsRemaining;
         totalExamSeconds = state.totalExamSeconds;
         examStartTime = state.examStartTime;
+        
+        lifelinesUsed = state.lifelinesUsed || {
+          fiftyFifty: false,
+          expert: false,
+          poll: false,
+          flip: false
+        };
+        questionHiddenOptions = state.questionHiddenOptions || {};
+        updateLifelineButtons();
         
         document.getElementById('exam-layout-val').value = state.displayPref;
         
@@ -3215,9 +4064,10 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       const q = questions[currentQuestionIdx];
       if (!q) return;
 
-      document.getElementById('exam-q-badge').textContent = `Question ${q.questionNumber}`;
+      const sourceInfo = q.sourcePaper ? ` (${escapeHTML(q.sourcePaper)})` : '';
+      document.getElementById('exam-q-badge').textContent = `Question ${q.questionNumber}${sourceInfo}`;
       document.getElementById('exam-q-text').textContent = q.questionText;
-
+ 
       const flagBtn = document.getElementById('exam-flag-btn');
       if (flaggedQuestions.has(q.questionNumber)) {
         flagBtn.classList.add('active');
@@ -3226,17 +4076,23 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         flagBtn.classList.remove('active');
         flagBtn.querySelector('span').textContent = 'Flag for Review';
       }
-
+ 
       const stack = document.getElementById('exam-options-stack');
       stack.innerHTML = '';
-
+ 
+      const hiddenOpts = questionHiddenOptions[currentQuestionIdx] || [];
+ 
       Object.entries(q.options || {}).forEach(([letter, text]) => {
         const card = document.createElement('div');
         card.className = 'option-card';
+        if (hiddenOpts.includes(letter)) {
+          card.style.visibility = 'hidden';
+          card.style.pointerEvents = 'none';
+        }
         if (userSelections[q.questionNumber] === letter) {
           card.classList.add('selected');
         }
-
+ 
         card.innerHTML = `
           <div class="option-letter">${letter}</div>
           <div class="option-text">${escapeHTML(text)}</div>
@@ -3266,29 +4122,33 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
     function renderScrollQuestions() {
       const container = document.getElementById('exam-scroll-container');
       container.innerHTML = '';
-
+ 
       questions.forEach((q, idx) => {
         const card = document.createElement('div');
         card.className = 'scroll-q-card';
         card.id = `scroll-q-${q.questionNumber}`;
-
+ 
+        const hiddenOpts = questionHiddenOptions[idx] || [];
+ 
         let optionsMarkup = '';
         Object.entries(q.options || {}).forEach(([letter, text]) => {
           const selected = userSelections[q.questionNumber] === letter ? 'selected' : '';
+          const isHidden = hiddenOpts.includes(letter) ? 'style="visibility: hidden; pointer-events: none;"' : '';
           optionsMarkup += `
-            <div class="option-card ${selected}" data-letter="${letter}">
+            <div class="option-card ${selected}" data-letter="${letter}" ${isHidden}>
               <div class="option-letter">${letter}</div>
               <div class="option-text">${escapeHTML(text)}</div>
             </div>
           `;
         });
-
+ 
         const flagged = flaggedQuestions.has(q.questionNumber) ? 'active' : '';
         const flagText = flaggedQuestions.has(q.questionNumber) ? 'Flagged' : 'Flag for Review';
-
+        const sourceInfo = q.sourcePaper ? ` (${escapeHTML(q.sourcePaper)})` : '';
+ 
         card.innerHTML = `
           <div class="question-header-row">
-            <div class="question-number-badge">Question ${q.questionNumber}</div>
+            <div class="question-number-badge">Question ${q.questionNumber}${sourceInfo}</div>
             <button class="flag-btn ${flagged}" data-qnum="${q.questionNumber}">
               <svg viewBox="0 0 24 24">
                 <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
@@ -3539,9 +4399,10 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         const cachedExplanation = q.explanation || cache[q.questionNumber] || '';
         const expBoxDisplay = cachedExplanation ? 'block' : 'none';
 
+        const sourceInfo = q.sourcePaper ? ` (${escapeHTML(q.sourcePaper)})` : '';
         card.innerHTML = `
           <div class="question-header-row">
-            <div class="question-number-badge">Question ${q.questionNumber}</div>
+            <div class="question-number-badge">Question ${q.questionNumber}${sourceInfo}</div>
             ${headerBadge}
           </div>
           <div class="question-body-text" style="font-size: 1rem; margin-bottom: 16px;">${escapeHTML(q.questionText)}</div>
@@ -3718,6 +4579,16 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       isTimerPaused = false;
       examStartTime = Date.now();
       
+      // Reset KBC Lifelines
+      lifelinesUsed = {
+        fiftyFifty: false,
+        expert: false,
+        poll: false,
+        flip: false
+      };
+      questionHiddenOptions = {};
+      updateLifelineButtons();
+      
       startAutoSaveLoop();
       
       const layout = document.getElementById('exam-layout-val').value;
@@ -3760,6 +4631,28 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
       const fromEl = document.getElementById(fromId);
       const toEl = document.getElementById(toId);
 
+      // Toggle Create New Set button visibility in header
+      const newSetBtn = document.getElementById('header-new-set-btn');
+      if (newSetBtn) {
+        if (toId === 'setup-view') {
+          newSetBtn.style.display = 'none';
+        } else {
+          newSetBtn.style.display = 'inline-flex';
+        }
+      }
+
+      // Toggle Header Timer visibility (only shown during active test)
+      const headerTimer = document.getElementById('header-timer-box');
+      if (headerTimer) {
+        if (toId === 'exam-view') {
+          headerTimer.classList.remove('hidden');
+          headerTimer.style.display = 'flex';
+        } else {
+          headerTimer.classList.add('hidden');
+          headerTimer.style.display = 'none';
+        }
+      }
+
       if (fromEl) {
         fromEl.style.opacity = '0';
         fromEl.style.transform = 'translateY(15px)';
@@ -3770,6 +4663,45 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         }, 200);
       } else {
         showTargetView(toEl);
+      }
+    }
+
+    function getActiveViewId() {
+      if (document.getElementById('setup-view').classList.contains('active')) return 'setup-view';
+      if (document.getElementById('preview-view').classList.contains('active')) return 'preview-view';
+      if (document.getElementById('exam-view').classList.contains('active')) return 'exam-view';
+      if (document.getElementById('results-view').classList.contains('active')) return 'results-view';
+      return '';
+    }
+
+    function handleNewSetClick() {
+      const activeView = getActiveViewId();
+      if (activeView === 'exam-view') {
+        if (confirm("Are you sure you want to attempt another test? Your current progress will be assessed and you will return to the setup page.")) {
+          // Stop timer, stop autosave, grade
+          if (timerInterval) clearInterval(timerInterval);
+          if (autoSaveInterval) clearInterval(autoSaveInterval);
+          examEndTime = Date.now();
+          localStorage.removeItem('exam_saved_state'); // Clear active session state
+          
+          // Calculate score
+          let correct = 0;
+          let incorrect = 0;
+          let skipped = 0;
+          questions.forEach(q => {
+            const sel = userSelections[q.questionNumber];
+            if (!sel) skipped++;
+            else if (sel === q.correctAnswer) correct++;
+            else incorrect++;
+          });
+          const total = questions.length;
+          const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+          
+          alert(`📊 Current Test Result:\n\nScore: ${percent}%\nCorrect: ${correct} / ${total}\nIncorrect: ${incorrect}\nSkipped: ${skipped}\n\nClick OK to return to the home page and create a new set.`);
+          handleRestartExam();
+        }
+      } else {
+        handleRestartExam();
       }
     }
 
