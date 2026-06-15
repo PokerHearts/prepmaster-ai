@@ -1562,10 +1562,17 @@
               <input type="text" id="ai-subjects" class="form-control" placeholder="e.g., HRM, Financial Derivatives, Algebra">
             </div>
             <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="ai-unlimited-cb" style="width: 16px; height: 16px; cursor: pointer;">
+                Unlimited questions (continuous mode)
+              </label>
+              <small style="color: var(--text-muted); display: block; margin-top: 4px;">Starts with 15 easy questions; more load in the background as you progress.</small>
+            </div>
+            <div class="form-group" id="ai-count-group">
               <label for="ai-count">Number of Questions (5-100): <span id="ai-count-val" style="font-weight: 600; color: var(--accent-color);">10</span></label>
               <input type="range" id="ai-count" class="form-control" min="5" max="100" value="10">
             </div>
-            <div class="form-group">
+            <div class="form-group" id="ai-difficulty-group">
               <label for="ai-difficulty">Difficulty Level:</label>
               <select id="ai-difficulty" class="form-control">
                 <option value="easy">Easy</option>
@@ -1623,6 +1630,13 @@
             <span class="num" id="pv-duplicates" style="color: var(--error);">0</span>
             <span class="label">Duplicate Numbers</span>
           </div>
+        </div>
+
+        <div id="pv-continuous-banner" class="alert alert-warning hidden" style="background: var(--accent-light); border-color: var(--accent-color); color: var(--text-primary);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span>Continuous mode: 15 easy questions loaded first. More questions will appear automatically during the exam with gradually increasing difficulty.</span>
         </div>
 
         <div id="pv-warning-box" class="alert alert-warning hidden">
@@ -1724,6 +1738,16 @@
                   <span>🔄 Flip Question</span>
                 </button>
               </div>
+            </div>
+
+            <div id="continuous-mode-panel" class="hidden" style="margin-bottom: 16px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+              <div class="nav-grid-title" style="margin-top: 0;">Continuous Mode</div>
+              <div id="continuous-status-text" style="font-size: 0.8rem; color: var(--text-muted); margin: 8px 0;">More questions load automatically as you progress.</div>
+              <div id="continuous-generating-indicator" class="hidden" style="align-items: center; gap: 8px; margin: 8px 0; font-size: 0.85rem;">
+                <div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                <span id="continuous-gen-text">Generating next batch...</span>
+              </div>
+              <button id="continuous-stop-btn" class="btn btn-danger" style="width: 100%; padding: 8px; font-size: 0.85rem; margin-top: 4px;">Stop Generating</button>
             </div>
 
             <button id="exam-submit-trigger" class="btn btn-danger" style="width: 100%; font-weight: 600; padding: 12px;">Submit Exam</button>
@@ -1983,6 +2007,16 @@
       flip: false
     };
     let questionHiddenOptions = {}; // { qIdx: [letters] }
+
+    // Continuous / unlimited question mode
+    const CONTINUOUS_BATCH_SIZE = 15;
+    const CONTINUOUS_PREFETCH_THRESHOLD = 10;
+    let continuousMode = false;
+    let continuousConfig = null;
+    let continuousBatchNumber = 0;
+    let continuousGenerating = false;
+    let continuousStopped = false;
+    let continuousAbortController = null;
     
     // Provider preset details mapping
     const PROVIDER_PRESETS = {
@@ -2310,6 +2344,8 @@
       
       // AI Gen tab trigger
       document.getElementById('ai-generate-btn').addEventListener('click', handleAIGenerateExam);
+      document.getElementById('ai-unlimited-cb').addEventListener('change', updateUnlimitedModeUI);
+      document.getElementById('continuous-stop-btn').addEventListener('click', stopContinuousGeneration);
 
       // Question list editing actions
       document.getElementById('pv-add-q-btn').addEventListener('click', handlePreviewAddQuestion);
@@ -2317,6 +2353,7 @@
       document.getElementById('pv-export-btn').addEventListener('click', handleExportSetJSON);
       document.getElementById('pv-save-btn').addEventListener('click', handleSaveGeneratedSet);
       document.getElementById('pv-back-btn').addEventListener('click', () => {
+        resetContinuousMode();
         switchView('preview-view', 'setup-view');
       });
       document.getElementById('pv-start-btn').addEventListener('click', handleStartExam);
@@ -2499,6 +2536,250 @@
       countInput.addEventListener('input', (e) => {
         countVal.textContent = e.target.value;
       });
+      updateUnlimitedModeUI();
+    }
+
+    function updateUnlimitedModeUI() {
+      const unlimited = document.getElementById('ai-unlimited-cb').checked;
+      const countGroup = document.getElementById('ai-count-group');
+      const difficultyGroup = document.getElementById('ai-difficulty-group');
+      const generateBtn = document.getElementById('ai-generate-btn');
+
+      countGroup.classList.toggle('hidden', unlimited);
+      difficultyGroup.classList.toggle('hidden', unlimited);
+      generateBtn.textContent = unlimited
+        ? 'Generate First Batch (15 Easy)'
+        : 'Generate Questions';
+    }
+
+    function resetContinuousMode() {
+      stopContinuousGeneration(true);
+      continuousMode = false;
+      continuousConfig = null;
+      continuousBatchNumber = 0;
+      continuousStopped = false;
+      updateContinuousUI();
+    }
+
+    function getContinuousBatchDifficulty(batchNum) {
+      if (batchNum <= 1) return 'easy';
+      if (batchNum === 2) return 'easy to medium';
+      if (batchNum === 3) return 'medium';
+      if (batchNum === 4) return 'medium to hard';
+      return 'hard';
+    }
+
+    function mapParsedQuestions(parsed, startNumber = 1) {
+      return parsed.map((q, idx) => {
+        const optionsObj = {};
+        if (Array.isArray(q.options)) {
+          q.options.forEach(opt => {
+            const letterMatch = opt.match(/^\s*([A-D])[\)\.\s-]\s*(.+)$/i);
+            if (letterMatch) {
+              optionsObj[letterMatch[1].toUpperCase()] = letterMatch[2].trim();
+            }
+          });
+        }
+
+        return {
+          questionNumber: q.questionNumber || (startNumber + idx),
+          questionText: q.questionText || "Missing question text",
+          options: (Object.keys(optionsObj).length >= 2) ? optionsObj : { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
+          correctAnswer: (q.correctAnswer || "A").toUpperCase(),
+          explanation: q.explanation || ""
+        };
+      });
+    }
+
+    function buildGenerationPrompt(examName, subjects, difficulty, qCount, style, startNumber = 1) {
+      const styleDesc = style === 'case-study'
+        ? "Include case-study based scenarios for some questions."
+        : "Standard MCQ style.";
+      const focusText = subjects ? ` focusing on ${subjects}` : '';
+      const numberingNote = startNumber > 1
+        ? ` Number questions starting from ${startNumber}. Do not repeat topics from earlier batches.`
+        : '';
+
+      return `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName}${focusText}. ${styleDesc}${numberingNote}
+Format exactly as a valid JSON array:
+[
+  {
+    "questionNumber": ${startNumber},
+    "questionText": "...",
+    "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+    "correctAnswer": "A",
+    "explanation": "..."
+  }
+]
+Ensure questions are exam-appropriate, accurate, and have options starting with A), B), C), D). Output ONLY the JSON array.`;
+    }
+
+    async function parseAiQuestionResponse(resultText) {
+      let jsonText = resultText.trim();
+      if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      }
+
+      const parsed = JSON.parse(jsonText);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error("AI response was not a valid question array.");
+      }
+      return parsed;
+    }
+
+    function updateContinuousUI() {
+      const panel = document.getElementById('continuous-mode-panel');
+      const statusText = document.getElementById('continuous-status-text');
+      const genIndicator = document.getElementById('continuous-generating-indicator');
+      const genText = document.getElementById('continuous-gen-text');
+      const stopBtn = document.getElementById('continuous-stop-btn');
+      const banner = document.getElementById('pv-continuous-banner');
+
+      if (banner) {
+        banner.classList.toggle('hidden', !continuousMode);
+      }
+
+      if (!panel) return;
+
+      panel.classList.toggle('hidden', !continuousMode);
+
+      if (!continuousMode) return;
+
+      const totalLoaded = questions.length;
+
+      if (continuousStopped) {
+        statusText.textContent = `${totalLoaded} questions loaded. Auto-generation stopped.`;
+        stopBtn.classList.add('hidden');
+        genIndicator.classList.add('hidden');
+        genIndicator.style.display = '';
+      } else if (continuousGenerating) {
+        const nextBatch = continuousBatchNumber + 1;
+        statusText.textContent = `${totalLoaded} questions loaded so far.`;
+        genText.textContent = `Generating batch ${nextBatch} (${getContinuousBatchDifficulty(nextBatch)})...`;
+        genIndicator.classList.remove('hidden');
+        genIndicator.style.display = 'flex';
+        stopBtn.classList.remove('hidden');
+        stopBtn.disabled = false;
+      } else {
+        statusText.textContent = `${totalLoaded} questions loaded. Next batch: ${getContinuousBatchDifficulty(continuousBatchNumber + 1)}.`;
+        genIndicator.classList.add('hidden');
+        genIndicator.style.display = '';
+        stopBtn.classList.remove('hidden');
+        stopBtn.disabled = false;
+      }
+    }
+
+    function getContinuousProgressIndex() {
+      const layout = document.getElementById('exam-layout-val')?.value || 'slider';
+      if (layout === 'scroll') {
+        const answeredIndices = questions
+          .map((q, i) => (userSelections[q.questionNumber] ? i : -1))
+          .filter(i => i >= 0);
+        return answeredIndices.length ? Math.max(...answeredIndices) : 0;
+      }
+      return currentQuestionIdx;
+    }
+
+    function checkContinuousPrefetch() {
+      if (!continuousMode || continuousStopped || continuousGenerating) return;
+
+      const progressIdx = getContinuousProgressIndex();
+      const remainingAhead = questions.length - 1 - progressIdx;
+
+      if (remainingAhead <= CONTINUOUS_PREFETCH_THRESHOLD) {
+        generateContinuousBatch();
+      }
+    }
+
+    function stopContinuousGeneration(silent = false) {
+      continuousStopped = true;
+      if (continuousAbortController) {
+        continuousAbortController.abort();
+        continuousAbortController = null;
+      }
+      continuousGenerating = false;
+      updateContinuousUI();
+      if (document.getElementById('exam-view')?.classList.contains('active')) {
+        const layout = document.getElementById('exam-layout-val')?.value || 'slider';
+        if (layout === 'slider') {
+          renderSliderQuestion();
+        }
+      }
+      if (!silent) {
+        showToast('Continuous generation stopped. You can finish the exam with current questions.', 'info');
+      }
+    }
+
+    async function generateContinuousBatch() {
+      if (!continuousMode || continuousStopped || continuousGenerating || !continuousConfig) return;
+
+      continuousGenerating = true;
+      continuousAbortController = new AbortController();
+      updateContinuousUI();
+
+      const nextBatchNum = continuousBatchNumber + 1;
+      const startNum = questions.length > 0
+        ? Math.max(...questions.map(q => q.questionNumber)) + 1
+        : 1;
+      const difficulty = getContinuousBatchDifficulty(nextBatchNum);
+      const { examName, subjects, style } = continuousConfig;
+
+      const prompt = buildGenerationPrompt(
+        examName,
+        subjects,
+        difficulty,
+        CONTINUOUS_BATCH_SIZE,
+        style,
+        startNum
+      );
+
+      try {
+        const systemPrompt = 'You are an expert academic examiner that outputs valid JSON lists of mock questions.';
+        const resultText = await callAiCompletions(
+          prompt,
+          systemPrompt,
+          3,
+          1000,
+          continuousAbortController.signal
+        );
+
+        const parsed = await parseAiQuestionResponse(resultText);
+        const newQuestions = mapParsedQuestions(parsed, startNum);
+        questions.push(...newQuestions);
+        continuousBatchNumber = nextBatchNum;
+
+        const layout = document.getElementById('exam-layout-val').value;
+        if (layout === 'slider') {
+          renderSliderQuestion();
+        } else {
+          renderScrollQuestions();
+        }
+
+        buildExamNavGrid();
+        updateExamProgress();
+        saveActiveExamState(true);
+        showToast(`Loaded ${newQuestions.length} more questions (batch ${nextBatchNum}, ${difficulty}).`, 'success');
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          if (!continuousStopped) {
+            showToast('Question generation cancelled.', 'info');
+          }
+        } else {
+          showToast('Background generation failed: ' + err.message, 'error');
+        }
+      } finally {
+        continuousGenerating = false;
+        continuousAbortController = null;
+        updateContinuousUI();
+        if (document.getElementById('exam-view')?.classList.contains('active')) {
+          const layout = document.getElementById('exam-layout-val').value;
+          if (layout === 'slider') {
+            renderSliderQuestion();
+          } else {
+            renderScrollQuestions();
+          }
+        }
+      }
     }
 
     // File Drag & Drop Zones setup
@@ -2891,6 +3172,7 @@
     // --- UPLOAD VIEW LOGIC ---
 
     async function handleUploadParseProceed() {
+      resetContinuousMode();
       const qpInput = document.getElementById('qp-file-input');
       const akInput = document.getElementById('ak-file-input');
       const qpManual = document.getElementById('qp-manual-text').value.trim();
@@ -2998,8 +3280,9 @@
 
       const examName = document.getElementById('ai-exam-name').value.trim();
       const subjects = document.getElementById('ai-subjects').value.trim();
-      const qCount = document.getElementById('ai-count').value;
-      const difficulty = document.getElementById('ai-difficulty').value;
+      const isUnlimited = document.getElementById('ai-unlimited-cb').checked;
+      const qCount = isUnlimited ? CONTINUOUS_BATCH_SIZE : document.getElementById('ai-count').value;
+      const difficulty = isUnlimited ? 'easy' : document.getElementById('ai-difficulty').value;
       const style = document.getElementById('ai-style').value;
       
       if (!examName) {
@@ -3007,79 +3290,51 @@
         return;
       }
 
-      const loader = document.getElementById('generate-loading');
-      loader.classList.remove('hidden');
-      
-      const styleDesc = style === 'case-study' ? "Include case-study based scenarios for some questions." : "Standard MCQ style.";
-      const focusText = subjects ? ` focusing on ${subjects}` : '';
-      
-      const prompt = `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName}${focusText}. ${styleDesc}
-Format exactly as a valid JSON array:
-[
-  {
-    "questionNumber": 1,
-    "questionText": "...",
-    "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
-    "correctAnswer": "A",
-    "explanation": "..."
-  }
-]
-Ensure questions are exam-appropriate, accurate, and have options starting with A), B), C), D). Output ONLY the JSON array.`;
+      resetContinuousMode();
+      if (isUnlimited) {
+        continuousMode = true;
+        continuousConfig = { examName, subjects, style };
+        continuousBatchNumber = 1;
+        continuousStopped = false;
+      }
 
-      // API fetch with retry/exponential backoff
+      const loader = document.getElementById('generate-loading');
+      const progressText = document.getElementById('generate-progress-text');
+      loader.classList.remove('hidden');
+      progressText.textContent = isUnlimited
+        ? 'Generating first batch of 15 easy questions...'
+        : 'Generating exam set...';
+      
+      const prompt = buildGenerationPrompt(examName, subjects, difficulty, qCount, style);
+
       try {
         const systemPrompt = 'You are an expert academic examiner that outputs valid JSON lists of mock questions.';
         const resultText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
-        
-        // Sanitize JSON format
-        let jsonText = resultText.trim();
-        if (jsonText.startsWith('```')) {
-          jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-        }
-        
-        const parsed = JSON.parse(jsonText);
-        
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-          throw new Error("AI response was not a valid question array.");
-        }
-        
-        // Map elements into state structure
-        questions = parsed.map((q, idx) => {
-          // Normalize options list into an object key-value pairs
-          const optionsObj = {};
-          if (Array.isArray(q.options)) {
-            q.options.forEach(opt => {
-              const letterMatch = opt.match(/^\s*([A-D])[\)\.\s-]\s*(.+)$/i);
-              if (letterMatch) {
-                optionsObj[letterMatch[1].toUpperCase()] = letterMatch[2].trim();
-              }
-            });
-          }
-          
-          return {
-            questionNumber: q.questionNumber || (idx + 1),
-            questionText: q.questionText || "Missing question text",
-            options: (Object.keys(optionsObj).length >= 2) ? optionsObj : { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
-            correctAnswer: (q.correctAnswer || "A").toUpperCase(),
-            explanation: q.explanation || ""
-          };
-        });
+        const parsed = await parseAiQuestionResponse(resultText);
+        questions = mapParsedQuestions(parsed);
 
         buildPreviewEditorList();
         updatePreviewAnalytics();
+        updateContinuousUI();
         
         loader.classList.add('hidden');
         switchView('setup-view', 'preview-view');
-        showToast(`AI generated ${questions.length} questions successfully!`, 'success');
+        showToast(
+          isUnlimited
+            ? `First batch ready: ${questions.length} easy questions. More will load during the exam.`
+            : `AI generated ${questions.length} questions successfully!`,
+          'success'
+        );
         
       } catch (err) {
         loader.classList.add('hidden');
+        resetContinuousMode();
         showToast("Generation failed: " + err.message, "error");
       }
     }
 
     // Call AI API with retry and exponential backoff
-    async function callAiCompletions(prompt, systemPrompt, retries = 3, delay = 1000) {
+    async function callAiCompletions(prompt, systemPrompt, retries = 3, delay = 1000, signal = null) {
       const apiKey = getApiKey();
       if (!apiKey) {
         throw new Error("🔒 API key required. Please enter an API key.");
@@ -3135,7 +3390,8 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: headers,
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
+          signal: signal || undefined
         });
 
         if (!response.ok) {
@@ -3156,10 +3412,13 @@ Ensure questions are exam-appropriate, accurate, and have options starting with 
         }
 
       } catch (err) {
+        if (signal?.aborted || err.name === 'AbortError') {
+          throw err;
+        }
         if (retries > 0) {
           showToast(`Request failed. Retrying in ${(delay / 1000).toFixed(1)}s...`, 'info');
           await new Promise(r => setTimeout(r, delay));
-          return callAiCompletions(prompt, systemPrompt, retries - 1, delay * 2);
+          return callAiCompletions(prompt, systemPrompt, retries - 1, delay * 2, signal);
         } else {
           throw err;
         }
@@ -3488,6 +3747,7 @@ ${questionListText}`;
         `;
         
         item.querySelector('.load-set-btn').addEventListener('click', () => {
+          resetContinuousMode();
           questions = s.questions;
           buildPreviewEditorList();
           updatePreviewAnalytics();
@@ -3562,6 +3822,11 @@ ${questionListText}`;
       buildExamNavGrid();
       updateExamProgress();
       startExamTimer();
+      updateContinuousUI();
+
+      if (continuousMode && !continuousStopped) {
+        checkContinuousPrefetch();
+      }
 
       switchView('preview-view', 'exam-view');
       toggleFullscreen(true);
@@ -3920,7 +4185,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       }, 30000);
     }
 
-    function saveActiveExamState() {
+    function saveActiveExamState(silent = false) {
       if (questions.length === 0) return;
       
       const state = {
@@ -3932,11 +4197,17 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
         examStartTime,
         displayPref: document.getElementById('exam-layout-val').value,
         lifelinesUsed,
-        questionHiddenOptions
+        questionHiddenOptions,
+        continuousMode,
+        continuousConfig,
+        continuousBatchNumber,
+        continuousStopped
       };
       
       localStorage.setItem('exam_saved_state', JSON.stringify(state));
-      showToast("Progress auto-saved.", "info");
+      if (!silent) {
+        showToast("Progress auto-saved.", "info");
+      }
     }
 
     function checkSavedState() {
@@ -3967,7 +4238,12 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
           flip: false
         };
         questionHiddenOptions = state.questionHiddenOptions || {};
+        continuousMode = state.continuousMode || false;
+        continuousConfig = state.continuousConfig || null;
+        continuousBatchNumber = state.continuousBatchNumber || 0;
+        continuousStopped = state.continuousStopped || false;
         updateLifelineButtons();
+        updateContinuousUI();
         
         document.getElementById('exam-layout-val').value = state.displayPref;
         
@@ -4042,7 +4318,12 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       const percent = total > 0 ? (answered / total) * 100 : 0;
       
       document.getElementById('exam-progress-bar').style.width = `${percent}%`;
-      document.getElementById('exam-progress-text').textContent = `Answered ${answered} of ${total}`;
+      const progressLabel = continuousMode && !continuousStopped
+        ? `Answered ${answered} of ${total}+`
+        : `Answered ${answered} of ${total}`;
+      document.getElementById('exam-progress-text').textContent = progressLabel;
+
+      checkContinuousPrefetch();
     }
 
     // Render Slider Mode question
@@ -4097,9 +4378,19 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
 
       document.getElementById('exam-prev-btn').disabled = currentQuestionIdx === 0;
       const nextBtn = document.getElementById('exam-next-btn');
-      if (currentQuestionIdx === questions.length - 1) {
+      if (continuousMode && !continuousStopped) {
+        if (continuousGenerating && currentQuestionIdx === questions.length - 1) {
+          nextBtn.innerHTML = `Generating...`;
+          nextBtn.disabled = true;
+        } else {
+          nextBtn.disabled = false;
+          nextBtn.innerHTML = `Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
+        }
+      } else if (currentQuestionIdx === questions.length - 1) {
+        nextBtn.disabled = false;
         nextBtn.innerHTML = `Finish <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
       } else {
+        nextBtn.disabled = false;
         nextBtn.innerHTML = `Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
       }
     }
@@ -4213,8 +4504,25 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
         currentQuestionIdx = next;
         renderSliderQuestion();
         buildExamNavGrid();
+        checkContinuousPrefetch();
       } else if (next === questions.length) {
-        openSubmitConfirmModal();
+        if (continuousMode && !continuousStopped) {
+          if (continuousGenerating) {
+            showToast('More questions are being generated. Please wait...', 'info');
+            return;
+          }
+          generateContinuousBatch().then(() => {
+            if (currentQuestionIdx < questions.length - 1) {
+              currentQuestionIdx++;
+              renderSliderQuestion();
+              buildExamNavGrid();
+            } else {
+              showToast('Still generating the next batch. Try again in a moment.', 'info');
+            }
+          });
+        } else {
+          openSubmitConfirmModal();
+        }
       }
     }
 
@@ -4255,6 +4563,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
     function submitExamFinal() {
       if (timerInterval) clearInterval(timerInterval);
       if (autoSaveInterval) clearInterval(autoSaveInterval);
+      stopContinuousGeneration(true);
       
       examEndTime = Date.now();
       localStorage.removeItem('exam_saved_state'); // Clear active session state
@@ -4592,6 +4901,11 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
 
     function handleRestartExam() {
       // Clear states
+      stopContinuousGeneration(true);
+      continuousMode = false;
+      continuousConfig = null;
+      continuousBatchNumber = 0;
+      continuousStopped = false;
       questions = [];
       userSelections = {};
       flaggedQuestions.clear();
