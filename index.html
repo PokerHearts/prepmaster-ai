@@ -1,0 +1,3819 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrepMaster AI | Secure Mock Exam & AI Generation</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- External Libraries (CDNs) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <style>
+    /* Premium CSS Variables & Theme Configuration */
+    :root {
+      --font-family-title: 'Outfit', -apple-system, sans-serif;
+      --font-family-body: 'Inter', -apple-system, sans-serif;
+      
+      /* Dark Theme Tokens (Default) */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-surface: rgba(30, 41, 59, 0.7);
+      --bg-card: #1e293b;
+      --bg-hover: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: rgba(99, 102, 241, 0.15);
+      --border-color: #334155;
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.15);
+      --error: #f43f5e;
+      --error-light: rgba(244, 63, 94, 0.15);
+      --warning: #f59e0b;
+      --warning-light: rgba(245, 158, 11, 0.15);
+      --shadow-color: rgba(0, 0, 0, 0.4);
+      --glass-blur: 16px;
+      --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --card-border: 1px solid rgba(255, 255, 255, 0.08);
+      --selection-bg: #475569;
+    }
+
+    [data-theme="light"] {
+      /* Light Theme Tokens */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #f1f5f9;
+      --bg-surface: rgba(255, 255, 255, 0.85);
+      --bg-card: #ffffff;
+      --bg-hover: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-color: #4f46e5;
+      --accent-hover: #3730a3;
+      --accent-light: rgba(79, 70, 229, 0.08);
+      --border-color: #cbd5e1;
+      --border-glow: rgba(79, 70, 229, 0.25);
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.1);
+      --error: #e11d48;
+      --error-light: rgba(225, 29, 72, 0.08);
+      --warning: #d97706;
+      --warning-light: rgba(217, 119, 6, 0.08);
+      --shadow-color: rgba(148, 163, 184, 0.12);
+      --card-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.15);
+      --card-border: 1px solid rgba(0, 0, 0, 0.06);
+      --selection-bg: #e2e8f0;
+    }
+
+    /* Reset & Base Layout */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-family-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Background Ambient Lights */
+    .bg-gradient-circles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.1;
+      transition: all 0.5s ease;
+    }
+
+    .bg-circle-1 {
+      top: -10%;
+      right: -5%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+    }
+
+    .bg-circle-2 {
+      bottom: -10%;
+      left: -5%;
+      width: 35vw;
+      height: 35vw;
+      background: radial-gradient(circle, var(--error) 0%, transparent 70%);
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-family-title);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    /* Top Bar Settings Panel */
+    .settings-bar {
+      background: var(--bg-secondary);
+      border-bottom: var(--card-border);
+      padding: 12px 24px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .settings-bar-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .settings-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .settings-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+    .settings-input-wrapper input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      outline: none;
+      padding: 4px;
+      width: 160px;
+    }
+
+    .settings-bar select {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 6px;
+      padding: 4px 8px;
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-surface);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-bottom: var(--card-border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-family-title);
+    }
+
+    .logo svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--accent-color);
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-hover);
+      border: var(--card-border);
+      border-radius: 50%;
+      padding: 10px;
+      cursor: pointer;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Tabs Interface */
+    .tabs-nav {
+      display: flex;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 28px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-family-title);
+      font-weight: 600;
+      font-size: 1.05rem;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: -2px;
+      outline: none;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+    }
+
+    /* Glass Panels */
+    .glass-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 24px;
+      transition: border-color 0.3s ease;
+    }
+
+    .glass-panel:hover {
+      border-color: var(--border-glow);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-family-body);
+      border: 1px solid transparent;
+      outline: none;
+      user-select: none;
+    }
+
+    .btn-icon-only {
+      padding: 8px;
+      border-radius: 6px;
+      background: var(--bg-hover);
+      border: var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .btn-icon-only:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-hover);
+      border: var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--selection-bg);
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+
+    .btn-success:hover {
+      background-color: #0d9488;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background-color: var(--error-light);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    .btn-danger:hover {
+      background-color: var(--error);
+      color: #ffffff;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Views */
+    .view-container {
+      display: none;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .view-container.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Drag & Drop */
+    .drag-drop-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    .drag-drop-zone:hover, .drag-drop-zone.dragover {
+      border-color: var(--accent-color);
+      background: var(--accent-light);
+    }
+
+    .drag-drop-zone svg {
+      width: 44px;
+      height: 44px;
+      stroke: var(--text-secondary);
+      transition: stroke 0.2s ease;
+    }
+
+    .drag-drop-zone:hover svg, .drag-drop-zone.dragover svg {
+      stroke: var(--accent-color);
+    }
+
+    .file-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Grid Layouts */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font-family-body);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Warnings / Alerts */
+    .alert {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      align-items: center;
+    }
+
+    .alert svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .alert-info {
+      background-color: var(--accent-light);
+      border: 1px solid var(--accent-color);
+      color: var(--text-primary);
+    }
+
+    .alert-info svg { stroke: var(--accent-color); }
+
+    .alert-warning {
+      background-color: var(--warning-light);
+      border: 1px solid var(--warning);
+      color: var(--text-primary);
+    }
+
+    .alert-warning svg { stroke: var(--warning); }
+
+    .alert-danger {
+      background-color: var(--error-light);
+      border: 1px solid var(--error);
+      color: var(--text-primary);
+    }
+
+    .alert-danger svg { stroke: var(--error); }
+
+    /* Match / Preview Layout */
+    .stat-badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-hover);
+      border: var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-badge .num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      font-family: var(--font-family-title);
+    }
+
+    .stat-badge .label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .edit-questions-list {
+      max-height: 480px;
+      overflow-y: auto;
+      border: var(--card-border);
+      border-radius: 12px;
+      background: var(--bg-primary);
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .question-editor-card {
+      background: var(--bg-card);
+      border: var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .question-editor-card:hover {
+      border-color: var(--border-glow);
+    }
+
+    .q-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .q-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .option-grid-editor {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .option-grid-editor {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+
+    .option-input-group span {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .option-input-group input {
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      width: 100%;
+      outline: none;
+      font-size: 0.85rem;
+      padding: 6px 0;
+    }
+
+    .correct-answer-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    .correct-answer-select select {
+      padding: 6px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    /* Saved Sets Panel */
+    .saved-sets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .saved-set-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--bg-hover);
+      border-radius: 8px;
+      border: var(--card-border);
+    }
+
+    .saved-set-item:hover {
+      border-color: var(--border-glow);
+    }
+
+    /* Exam Layout */
+    .test-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .test-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .test-sidebar {
+      position: sticky;
+      top: 120px;
+    }
+
+    .timer-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-family-title);
+      justify-content: center;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: var(--accent-light);
+      border-radius: 12px;
+      border: 1px solid var(--accent-color);
+    }
+
+    .timer-container.timer-warning {
+      background: var(--error-light);
+      border-color: var(--error);
+      color: var(--error);
+      animation: pulse 1s infinite alternate;
+    }
+
+    .timer-container svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar-outer {
+      width: 100%;
+      height: 8px;
+      background: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      background: var(--success);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* Navigation Grid */
+    .nav-grid-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .nav-box {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: var(--card-border);
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-box:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .nav-box.current {
+      border: 2px solid var(--accent-color);
+      box-shadow: 0 0 0 2px var(--accent-light);
+    }
+
+    .nav-box.answered {
+      background: var(--accent-color);
+      color: #ffffff;
+      border-color: var(--accent-hover);
+    }
+
+    .nav-box.flagged {
+      border: 2px solid var(--warning);
+      color: var(--warning);
+      position: relative;
+    }
+
+    .nav-box.flagged::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--warning);
+    }
+
+    .nav-box.answered.flagged {
+      background: var(--accent-color);
+      color: #ffffff;
+      border: 2px solid var(--warning);
+    }
+
+    /* Question Panel */
+    .question-display-card {
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+
+    .question-number-badge {
+      background: var(--accent-light);
+      color: var(--accent-color);
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .flag-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .flag-btn:hover { color: var(--warning); }
+    .flag-btn.active { color: var(--warning); font-weight: 500; }
+    .flag-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; }
+    .flag-btn.active svg { fill: var(--warning); }
+
+    .question-body-text {
+      font-size: 1.15rem;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+
+    .options-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex: 1;
+    }
+
+    .option-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .option-card:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-glow);
+    }
+
+    .option-card.selected {
+      background: var(--accent-light);
+      border-color: var(--accent-color);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08);
+    }
+
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--bg-hover);
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      border: var(--card-border);
+      flex-shrink: 0;
+    }
+
+    .option-card.selected .option-letter {
+      background: var(--accent-color);
+      color: #ffffff;
+      border-color: var(--accent-color);
+    }
+
+    .option-text {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .exam-nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: var(--card-border);
+    }
+
+    .scroll-exam-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .scroll-q-card {
+      background: var(--bg-card);
+      border: var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    /* Results Dashboard */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .score-circle-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .score-svg {
+      width: 180px;
+      height: 180px;
+      transform: rotate(-90deg);
+      margin-bottom: 20px;
+    }
+
+    .score-svg-bg {
+      fill: none;
+      stroke: var(--border-color);
+      stroke-width: 14;
+    }
+
+    .score-svg-fill {
+      fill: none;
+      stroke: var(--accent-color);
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-dasharray: 502;
+      stroke-dashoffset: 502;
+      transition: stroke-dashoffset 1.5s ease-in-out, stroke 0.3s ease;
+    }
+
+    .score-text-overlay {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 180px;
+      width: 180px;
+      top: 32px;
+    }
+
+    .score-percent {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-family: var(--font-family-title);
+      line-height: 1.1;
+    }
+
+    .score-fraction {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .results-summary-stats {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .results-stat-box {
+      background: var(--bg-primary);
+      border: var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .results-stat-box .val {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .results-stat-box .lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .results-stat-correct { color: var(--success); }
+    .results-stat-wrong { color: var(--error); }
+    .results-stat-skipped { color: var(--text-muted); }
+
+    .pass-fail-banner {
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: var(--font-family-title);
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .pass-banner { background-color: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+    .fail-banner { background-color: var(--error-light); color: var(--error); border: 1px solid var(--error); }
+
+    .review-header {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      border-bottom: var(--card-border);
+      padding-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review-card {
+      background: var(--bg-card);
+      border: var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .review-card.correct-card { border-left: 5px solid var(--success); }
+    .review-card.incorrect-card { border-left: 5px solid var(--error); }
+    .review-card.skipped-card { border-left: 5px solid var(--text-muted); }
+
+    .option-review-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: var(--bg-primary);
+    }
+
+    .option-review-card.correct-choice {
+      border-color: var(--success);
+      background-color: var(--success-light);
+    }
+
+    .option-review-card.wrong-choice {
+      border-color: var(--error);
+      background-color: var(--error-light);
+    }
+
+    .badge-result {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 30px;
+      font-weight: 600;
+      margin-left: auto;
+    }
+
+    .badge-result-correct { background: var(--success); color: #ffffff; }
+    .badge-result-wrong { background: var(--error); color: #ffffff; }
+
+    /* AI Tutor Explanation Box */
+    .ai-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: #ffffff;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+    }
+
+    .ai-btn:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
+    }
+
+    .ai-explanation-box {
+      margin-top: 16px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.04);
+      overflow: hidden;
+      display: none;
+      animation: slideDown 0.3s ease forwards;
+    }
+
+    .ai-explanation-header {
+      background: rgba(168, 85, 247, 0.1);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      color: #a855f7;
+    }
+
+    .ai-explanation-header svg { width: 18px; height: 18px; fill: none; stroke: currentColor; }
+    .ai-explanation-body { padding: 16px; font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+
+    .ai-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(168, 85, 247, 0.2);
+      border-top-color: #a855f7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Modals */
+    dialog {
+      background: var(--bg-card);
+      border: var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      color: var(--text-primary);
+      width: 90%;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      outline: none;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+    }
+
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .dialog-title { font-size: 1.25rem; font-weight: 700; }
+    .dialog-close { background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .dialog-close:hover { color: var(--text-primary); }
+    .dialog-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: var(--card-border); padding-top: 16px; }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 350px;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: var(--card-border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    .toast-success { border-left: 4px solid var(--success); }
+    .toast-error { border-left: 4px solid var(--error); }
+
+    /* Animations */
+    @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Helpers */
+    .hidden { display: none !important; }
+    .flex-center { display: flex; justify-content: center; align-items: center; }
+    .text-center { text-align: center; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient BG -->
+  <div class="bg-gradient-circles">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+  </div>
+
+  <!-- Security Settings Bar -->
+  <section class="settings-bar">
+    <div class="settings-bar-container">
+      <div class="settings-group">
+        <span>🔐 API Settings:</span>
+        <div class="settings-input-wrapper">
+          <input type="password" id="api-key-input" placeholder="Enter API Key" aria-label="API Key">
+        </div>
+        <select id="model-select" aria-label="Model Selection">
+          <!-- Populated dynamically -->
+        </select>
+        <button id="clear-key-btn" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">Clear Now</button>
+        <button id="open-config-btn" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">⚙️ Configure</button>
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer;">
+          <input type="checkbox" id="clear-on-close-cb" checked> Clear on Tab Close
+        </label>
+      </div>
+      <div id="api-security-warning" style="font-size: 0.8rem; color: var(--warning); font-weight: 500;">
+        🛡️ Key stored in sessionStorage (current tab only).
+      </div>
+    </div>
+  </section>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z" />
+        </svg>
+        <span>PrepMaster AI</span>
+      </div>
+      <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Light/Dark Theme">
+        <svg id="theme-sun-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+        <svg id="theme-moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- SETUP PHASE VIEW -->
+    <section id="setup-view">
+      <!-- Tabs Navigation -->
+      <nav class="tabs-nav" aria-label="Setup Modes">
+        <button class="tab-btn active" id="tab-upload">📄 Upload Files</button>
+        <button class="tab-btn" id="tab-generate">🤖 AI Generate</button>
+      </nav>
+
+      <!-- TAB 1: UPLOAD FILES -->
+      <div id="panel-upload" class="tab-panel">
+        <div class="grid-2col">
+          <!-- Question Sheet -->
+          <div class="glass-panel">
+            <h3 class="mb-4">1. Question Sheet</h3>
+            <p class="text-secondary mb-4" style="font-size: 0.9rem;">Upload a PDF, Image, or Text file containing multiple-choice questions.</p>
+            <div class="drag-drop-zone" id="qp-drop-zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <div>
+                <p>Drag & drop your question sheet here</p>
+                <p class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">Supports PDF, PNG, JPG, TXT</p>
+              </div>
+              <input type="file" id="qp-file-input" class="file-input" accept=".pdf,.txt,.png,.jpg,.jpeg">
+            </div>
+            <div id="qp-file-info" class="file-info hidden"></div>
+
+            <details class="mt-4">
+              <summary>Or paste text manually</summary>
+              <div class="details-content">
+                <textarea id="qp-manual-text" class="form-control" placeholder="1. What is HTML?&#10;A) ...&#10;B) ..."></textarea>
+              </div>
+            </details>
+          </div>
+
+          <!-- Answer Key -->
+          <div class="glass-panel">
+            <h3 class="mb-4">2. Answer Key</h3>
+            <p class="text-secondary mb-4" style="font-size: 0.9rem;">Upload or paste the correct answers. Matched automatically by question number.</p>
+            <div class="drag-drop-zone" id="ak-drop-zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <div>
+                <p>Drag & drop your answer key here</p>
+                <p class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">Supports TXT, CSV, PDF, PNG, JPG</p>
+              </div>
+              <input type="file" id="ak-file-input" class="file-input" accept=".txt,.csv,.pdf,.png,.jpg,.jpeg">
+            </div>
+            <div id="ak-file-info" class="file-info hidden"></div>
+
+            <details class="mt-4">
+              <summary>Or paste key manually</summary>
+              <div class="details-content">
+                <textarea id="ak-manual-text" class="form-control" placeholder="1.A, 2.C, 3.B&#10;Or CSV:&#10;1,A&#10;2,C"></textarea>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="glass-panel mt-4 text-center">
+          <button id="parse-proceed-btn" class="btn btn-primary" style="padding: 14px 40px; font-weight: 600;">Parse & Proceed</button>
+          <div id="parse-loading" class="hidden mt-4">
+            <div class="flex-center" style="gap: 12px;">
+              <div class="spinner"></div>
+              <span id="parse-progress-text">Processing documents...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: AI GENERATE -->
+      <div id="panel-generate" class="tab-panel hidden">
+        <div class="grid-2col">
+          <!-- Parameters Form -->
+          <div class="glass-panel">
+            <h3 class="mb-4">AI Question Generator</h3>
+            <div class="form-group">
+              <label for="ai-exam-name">Exam Name / Topic:</label>
+              <input type="text" id="ai-exam-name" class="form-control" placeholder="e.g., UGC NET Management, SAT Math">
+            </div>
+            <div class="form-group">
+              <label for="ai-subjects">Focus Subjects / Chapters:</label>
+              <input type="text" id="ai-subjects" class="form-control" placeholder="e.g., HRM, Financial Derivatives, Algebra">
+            </div>
+            <div class="form-group">
+              <label for="ai-count">Number of Questions (5-100): <span id="ai-count-val" style="font-weight: 600; color: var(--accent-color);">10</span></label>
+              <input type="range" id="ai-count" class="form-control" min="5" max="100" value="10">
+            </div>
+            <div class="form-group">
+              <label for="ai-difficulty">Difficulty Level:</label>
+              <select id="ai-difficulty" class="form-control">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="ai-style">Question Style:</label>
+              <select id="ai-style" class="form-control">
+                <option value="standard">Standard MCQ</option>
+                <option value="case-study">Include Case Study / Scenario Based</option>
+              </select>
+            </div>
+            <button id="ai-generate-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 600;">Generate Questions</button>
+            
+            <div id="generate-loading" class="hidden mt-4">
+              <div class="flex-center" style="gap: 12px;">
+                <div class="spinner"></div>
+                <span id="generate-progress-text">Generating exam set...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved Sets Panel -->
+          <div class="glass-panel">
+            <h3 class="mb-4">Saved Sets (Max 5)</h3>
+            <div class="saved-sets-list" id="saved-sets-container">
+              <!-- Load state -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: PREVIEW & VERIFY EDIT -->
+    <section id="preview-view" class="view-container">
+      <div class="glass-panel">
+        <h2 class="mb-4">Review Exam Set</h2>
+        
+        <div class="stat-badge-grid">
+          <div class="stat-badge">
+            <span class="num" id="pv-total-q">0</span>
+            <span class="label">Questions</span>
+          </div>
+          <div class="stat-badge">
+            <span class="num" id="pv-matched-ans">0</span>
+            <span class="label">Matched Answers</span>
+          </div>
+          <div class="stat-badge">
+            <span class="num" id="pv-missing-ans" style="color: var(--warning);">0</span>
+            <span class="label">Missing Answers</span>
+          </div>
+          <div class="stat-badge">
+            <span class="num" id="pv-duplicates" style="color: var(--error);">0</span>
+            <span class="label">Duplicate Numbers</span>
+          </div>
+        </div>
+
+        <div id="pv-warning-box" class="alert alert-warning hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span id="pv-warning-text">Question count and matched answers count differ. Adjust below.</span>
+        </div>
+
+        <!-- Question List Editor -->
+        <div class="edit-questions-list" id="questions-edit-list"></div>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+          <button id="pv-add-q-btn" class="btn btn-secondary">➕ Add Question</button>
+          <button id="pv-export-btn" class="btn btn-secondary">💾 Export Set JSON</button>
+          
+          <!-- Save Set form block -->
+          <div style="display: flex; gap: 8px; margin-left: auto;" id="save-set-form">
+            <input type="text" id="save-set-name" class="form-control" placeholder="Set Name" style="width: 180px; padding: 6px 12px;">
+            <button id="pv-save-btn" class="btn btn-secondary">Save Set</button>
+          </div>
+        </div>
+
+        <!-- Configuration parameters -->
+        <div class="grid-2col" style="border-top: var(--card-border); padding-top: 20px;">
+          <div class="form-group">
+            <label for="exam-timer-val">Exam Duration (minutes):</label>
+            <input type="number" id="exam-timer-val" class="form-control" value="30" min="1" max="180">
+          </div>
+          <div class="form-group">
+            <label for="exam-layout-val">Navigation Layout Preference:</label>
+            <select id="exam-layout-val" class="form-control">
+              <option value="slider">One Question at a Time (Slider)</option>
+              <option value="scroll">Scrollable List (All on screen)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Start Trigger -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <button id="pv-back-btn" class="btn btn-secondary">Back to Setup</button>
+          <button id="pv-start-btn" class="btn btn-success" style="padding: 12px 36px; font-weight: 600;">Start Exam</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: ACTIVE EXAM INTERFACE -->
+    <section id="exam-view" class="view-container">
+      <div class="test-layout">
+        <!-- Sidebar Navigation Controls -->
+        <aside class="test-sidebar">
+          <div class="glass-panel" style="padding: 20px;">
+            <!-- Timer Display -->
+            <div class="timer-container" id="exam-timer-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span id="exam-timer-text">30:00</span>
+            </div>
+
+            <!-- Timer Controls -->
+            <div class="timer-controls">
+              <button id="exam-timer-pause-btn" class="btn btn-secondary" style="flex: 1; padding: 8px;">Pause</button>
+              <button id="exam-timer-resume-btn" class="btn btn-success hidden" style="flex: 1; padding: 8px;">Resume</button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-outer">
+              <div class="progress-bar-inner" id="exam-progress-bar"></div>
+            </div>
+            <div class="progress-text" id="exam-progress-text">Answered 0 of 0</div>
+
+            <!-- Navigation Grid -->
+            <div class="nav-grid-title">Navigator</div>
+            <div class="nav-grid" id="exam-nav-grid"></div>
+
+            <button id="exam-submit-trigger" class="btn btn-danger" style="width: 100%; font-weight: 600; padding: 12px;">Submit Exam</button>
+          </div>
+        </aside>
+
+        <!-- Question View area -->
+        <div class="glass-panel" id="exam-main-panel" style="margin-bottom: 0;">
+          <!-- Slider view container -->
+          <div id="exam-slider-container" class="question-display-card">
+            <div class="question-header-row">
+              <div class="question-number-badge" id="exam-q-badge">Question 1</div>
+              <button id="exam-flag-btn" class="flag-btn">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <span>Flag for Review</span>
+              </button>
+            </div>
+
+            <div class="question-body-text" id="exam-q-text">Loading question...</div>
+
+            <div class="options-stack" id="exam-options-stack"></div>
+
+            <div class="exam-nav-buttons">
+              <button id="exam-prev-btn" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg> Previous
+              </button>
+              <button id="exam-next-btn" class="btn btn-secondary">
+                Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Scrollable view container -->
+          <div id="exam-scroll-container" class="scroll-exam-container hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: RESULTS & ANALYSIS -->
+    <section id="results-view" class="view-container">
+      <div class="results-grid">
+        <!-- Result Stats Sidebar -->
+        <aside class="glass-panel text-center" style="padding: 20px;">
+          <h3>Your Result</h3>
+          <div class="score-circle-container" style="position: relative;">
+            <svg class="score-svg">
+              <circle class="score-svg-bg" cx="90" cy="90" r="80"/>
+              <circle class="score-svg-fill" id="results-score-ring" cx="90" cy="90" r="80"/>
+            </svg>
+            <div class="score-text-overlay">
+              <span class="score-percent" id="results-percent">0%</span>
+              <span class="score-fraction" id="results-fraction">0 / 0</span>
+            </div>
+          </div>
+
+          <div id="results-pass-fail" class="pass-fail-banner pass-banner">PASSED</div>
+
+          <div class="results-summary-stats">
+            <div class="results-stat-box">
+              <div class="val results-stat-correct" id="results-val-correct">0</div>
+              <div class="lbl">Correct</div>
+            </div>
+            <div class="results-stat-box">
+              <div class="val results-stat-wrong" id="results-val-wrong">0</div>
+              <div class="lbl">Wrong</div>
+            </div>
+            <div class="results-stat-box" style="grid-column: span 2;">
+              <div class="val results-stat-skipped" id="results-val-skipped">0</div>
+              <div class="lbl">Skipped / Unanswered</div>
+            </div>
+          </div>
+
+          <div class="mt-4" style="font-size: 0.85rem; color: var(--text-secondary);" id="results-time-spent">
+            Time Taken: 00:00
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+            <button id="results-retake-btn" class="btn btn-secondary">Retake Test</button>
+            <button id="results-restart-btn" class="btn btn-primary">Start New Exam</button>
+          </div>
+        </aside>
+
+        <!-- Detailed Review List -->
+        <div class="glass-panel">
+          <div class="review-header">
+            <h2>Detailed Review</h2>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <select id="results-filter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" aria-label="Filter answers">
+                <option value="all">Show All</option>
+                <option value="wrong">Show Wrong Only</option>
+                <option value="correct">Show Correct Only</option>
+                <option value="skipped">Show Skipped Only</option>
+              </select>
+              <button id="results-export-json-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Export JSON</button>
+              <button id="results-export-csv-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">Export CSV</button>
+            </div>
+          </div>
+
+          <div id="results-review-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOASTS CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- DIALOG: CONFIRM SUBMIT -->
+  <dialog id="confirm-submit-dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Submit Exam?</span>
+      <button class="dialog-close" id="confirm-submit-close-btn">&times;</button>
+    </div>
+    <div>
+      <p id="confirm-submit-msg">Are you sure you want to submit your exam?</p>
+      <p style="color: var(--warning); margin-top: 10px; font-weight: 500;" id="confirm-submit-warning"></p>
+    </div>
+    <div class="dialog-footer">
+      <button id="confirm-submit-cancel" class="btn btn-secondary">Go Back</button>
+      <button id="confirm-submit-proceed" class="btn btn-danger">Submit Exam</button>
+    </div>
+  </dialog>
+
+  <!-- DIALOG: RESUME EXAM -->
+  <dialog id="resume-exam-dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Resume Active Session?</span>
+    </div>
+    <div>
+      <p>An active exam session was found in progress. Would you like to resume where you left off?</p>
+    </div>
+    <div class="dialog-footer">
+      <button id="resume-discard-btn" class="btn btn-secondary">Discard & Start Over</button>
+      <button id="resume-confirm-btn" class="btn btn-primary">Resume Session</button>
+    </div>
+  </dialog>
+
+  <!-- DIALOG: SETTINGS / EXAM CONFIGURATION -->
+  <dialog id="exam-config-dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">System Settings & Config</span>
+      <button class="dialog-close" id="config-close-btn">&times;</button>
+    </div>
+    <div class="form-group">
+      <label for="config-pass-percent">Passing Percentage (%):</label>
+      <input type="number" id="config-pass-percent" class="form-control" value="50" min="0" max="100">
+    </div>
+    <div class="form-group">
+      <label for="settings-preset">API Provider Preset:</label>
+      <select id="settings-preset" class="form-control">
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Google Gemini (AI Studio)</option>
+        <option value="openrouter">OpenRouter (Claude, Llama, etc.)</option>
+        <option value="groq">Groq</option>
+        <option value="nvidia">NVIDIA NIM</option>
+        <option value="deepseek">DeepSeek</option>
+        <option value="anthropic">Anthropic Claude (Direct/Proxy)</option>
+        <option value="custom">Custom / Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="settings-endpoint">API Endpoint URL:</label>
+      <input type="url" id="settings-endpoint" class="form-control" placeholder="e.g. https://api.openai.com/v1/chat/completions">
+    </div>
+    <div class="form-group">
+      <label for="settings-custom-model">Custom Model ID (Overrides dropdown selection if set):</label>
+      <input type="text" id="settings-custom-model" class="form-control" placeholder="e.g. meta-llama/llama-3.3-70b-instruct">
+    </div>
+    <div class="form-group">
+      <label for="settings-headers">Custom Headers (JSON, optional):</label>
+      <textarea id="settings-headers" class="form-control" rows="2" placeholder='{"Content-Type": "application/json"}'></textarea>
+    </div>
+    <details class="form-group" style="margin-top: 12px; cursor: pointer; color: var(--text-secondary);">
+      <summary style="font-weight: 500; font-size: 0.9rem; margin-bottom: 8px; user-select: none;">⚙️ Advanced Header Settings</summary>
+      <div style="padding: 8px 0; display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="settings-auth-header">API Key Header Name:</label>
+          <input type="text" id="settings-auth-header" class="form-control" placeholder="Authorization">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="settings-auth-prefix">API Key Header Value Prefix (with space if needed):</label>
+          <input type="text" id="settings-auth-prefix" class="form-control" placeholder="Bearer ">
+        </div>
+      </div>
+    </details>
+    <div class="form-group">
+      <label for="settings-prompt">System Prompt for AI Tutor:</label>
+      <textarea id="settings-prompt" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="dialog-footer">
+      <button id="config-save-btn" class="btn btn-success">Save Settings</button>
+    </div>
+  </dialog>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // State Schema
+    let questions = []; // Array of Question objects
+    let userSelections = {}; // { qNum: letter }
+    let flaggedQuestions = new Set(); // Set of flagged qNums
+    let answersMatched = {}; // { qNum: letter } from upload mode
+    
+    // Exam parameters
+    let currentQuestionIdx = 0;
+    let secondsRemaining = 1800;
+    let totalExamSeconds = 1800;
+    let timerInterval = null;
+    let examStartTime = null;
+    let examEndTime = null;
+    let autoSaveInterval = null;
+    let isTimerPaused = false;
+    
+    // Provider preset details mapping
+    const PROVIDER_PRESETS = {
+      openai: {
+        name: 'OpenAI',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        placeholder: 'Enter OpenAI API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to OpenAI.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Recommended)' },
+          { value: 'gpt-4o', label: 'gpt-4o' },
+          { value: 'o3-mini', label: 'o3-mini' },
+          { value: 'gpt-3.5-turbo', label: 'gpt-3.5-turbo' }
+        ]
+      },
+      gemini: {
+        name: 'Google Gemini (AI Studio)',
+        endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+        placeholder: 'Enter Gemini API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to Google AI Studio.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Recommended)' },
+          { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash' },
+          { value: 'gemini-2.5-pro', label: 'gemini-2.5-pro' },
+          { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' }
+        ]
+      },
+      openrouter: {
+        name: 'OpenRouter',
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        placeholder: 'Enter OpenRouter API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to OpenRouter.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json",\n  "HTTP-Referer": "https://prepmaster.app",\n  "X-Title": "PrepMaster"\n}',
+        models: [
+          { value: 'google/gemini-2.5-flash', label: 'gemini-2.5-flash (via OpenRouter)' },
+          { value: 'anthropic/claude-3.5-sonnet', label: 'claude-3.5-sonnet (via OpenRouter)' },
+          { value: 'meta-llama/llama-3.3-70b-instruct', label: 'llama-3.3-70b (via OpenRouter)' },
+          { value: 'deepseek/deepseek-chat', label: 'deepseek-chat (via OpenRouter)' }
+        ]
+      },
+      groq: {
+        name: 'Groq',
+        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        placeholder: 'Enter Groq API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to Groq.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'llama-3.3-70b-versatile', label: 'llama-3.3-70b-versatile' },
+          { value: 'llama-3.1-8b-instant', label: 'llama-3.1-8b-instant' },
+          { value: 'mixtral-8x7b-32768', label: 'mixtral-8x7b-32768' }
+        ]
+      },
+      nvidia: {
+        name: 'NVIDIA NIM',
+        endpoint: 'https://integrate.api.nvidia.com/v1/chat/completions',
+        placeholder: 'Enter NVIDIA NIM API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to NVIDIA NIM.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'meta/llama-3.3-70b-instruct', label: 'llama-3.3-70b-instruct' },
+          { value: 'nvidia/llama-3.1-nemotron-70b-instruct', label: 'llama-3.1-nemotron-70b-instruct' }
+        ]
+      },
+      deepseek: {
+        name: 'DeepSeek',
+        endpoint: 'https://api.deepseek.com/chat/completions',
+        placeholder: 'Enter DeepSeek API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to DeepSeek.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'deepseek-chat', label: 'deepseek-chat' },
+          { value: 'deepseek-reasoner', label: 'deepseek-reasoner' }
+        ]
+      },
+      anthropic: {
+        name: 'Anthropic Claude (Direct/Proxy)',
+        endpoint: 'https://api.anthropic.com/v1/messages',
+        placeholder: 'Enter Claude API Key',
+        info: '⚠️ Native browser requests to Anthropic direct will fail due to CORS. Recommend OpenRouter, or use a CORS proxy.',
+        authHeader: 'x-api-key',
+        authPrefix: '',
+        headers: '{\n  "Content-Type": "application/json",\n  "anthropic-version": "2023-06-01",\n  "anthropic-danger-out-of-band-requests-allowed": "true"\n}',
+        models: [
+          { value: 'claude-3-5-sonnet-20241022', label: 'claude-3-5-sonnet' },
+          { value: 'claude-3-5-haiku-20241022', label: 'claude-3-5-haiku' },
+          { value: 'claude-3-opus-20240229', label: 'claude-3-opus' }
+        ]
+      },
+      custom: {
+        name: 'Custom / Other',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        placeholder: 'Enter API Key',
+        info: '🛡️ Key stored in sessionStorage (current tab only). Sent directly to custom endpoint.',
+        authHeader: 'Authorization',
+        authPrefix: 'Bearer ',
+        headers: '{\n  "Content-Type": "application/json"\n}',
+        models: [
+          { value: 'custom-model', label: 'Custom Model' }
+        ]
+      }
+    };
+
+    // Preferences & Settings defaults
+    const preferences = {
+      theme: 'dark',
+      defaultTimerMins: 30,
+      modelChoice: 'gpt-4o-mini',
+      clearOnClose: true,
+      passPercent: 50,
+      apiEndpoint: 'https://api.openai.com/v1/chat/completions',
+      systemPrompt: 'You are a helpful AI exam tutor. Explain why the correct option is the right answer to the multiple-choice question, and why the other options are incorrect. If the user selected an answer, explain why their choice was incorrect or correct. Keep the explanation clear, educational, and concise. Use markdown formatting like bold, bullet points, and code formatting where necessary.',
+      preset: 'openai',
+      customModel: '',
+      customHeaders: '',
+      authHeaderName: 'Authorization',
+      authHeaderPrefix: 'Bearer '
+    };
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPreferences();
+      loadApiSettings();
+      initThemeToggle();
+      initTabNavigation();
+      initDragAndDrop();
+      initFormSliders();
+      initButtonListeners();
+      renderSavedSetsList();
+      checkSavedState();
+    });
+
+    // --- SECURE STORAGE OPERATIONS ---
+    
+    // Secure Session Storage Key Handling
+    function getApiKey() {
+      return sessionStorage.getItem('openai_api_key') || '';
+    }
+
+    function setApiKey(key) {
+      if (key) {
+        sessionStorage.setItem('openai_api_key', key);
+      } else {
+        sessionStorage.removeItem('openai_api_key');
+      }
+    }
+
+    // Dynamic UI Config according to Preset selection
+    function refreshUIForPreset(presetKey, isInitialLoad = false) {
+      const preset = PROVIDER_PRESETS[presetKey] || PROVIDER_PRESETS.openai;
+      
+      const keyInput = document.getElementById('api-key-input');
+      keyInput.placeholder = preset.placeholder;
+      
+      const warningEl = document.getElementById('api-security-warning');
+      if (warningEl) {
+        warningEl.textContent = preset.info;
+      }
+      
+      if (!isInitialLoad) {
+        document.getElementById('settings-endpoint').value = preset.endpoint;
+        document.getElementById('settings-headers').value = preset.headers;
+        document.getElementById('settings-auth-header').value = preset.authHeader;
+        document.getElementById('settings-auth-prefix').value = preset.authPrefix;
+      }
+      
+      const select = document.getElementById('model-select');
+      const savedVal = select.value || preferences.modelChoice;
+      select.innerHTML = '';
+      
+      preset.models.forEach(modelOpt => {
+        const opt = document.createElement('option');
+        opt.value = modelOpt.value;
+        opt.textContent = modelOpt.label;
+        select.appendChild(opt);
+      });
+      
+      const customModelVal = document.getElementById('settings-custom-model').value.trim();
+      if (customModelVal) {
+        const opt = document.createElement('option');
+        opt.value = customModelVal;
+        opt.textContent = `Custom: ${customModelVal}`;
+        select.appendChild(opt);
+        select.value = customModelVal;
+      } else {
+        const hasChoice = preset.models.some(m => m.value === savedVal);
+        if (hasChoice) {
+          select.value = savedVal;
+        } else if (preset.models.length > 0) {
+          select.value = preset.models[0].value;
+        }
+      }
+      
+      preferences.modelChoice = select.value;
+    }
+
+    // Never log API Key or display plain text
+    function loadApiSettings() {
+      const storedKey = getApiKey();
+      const input = document.getElementById('api-key-input');
+      input.value = storedKey;
+      
+      const savedPrefs = localStorage.getItem('prepmaster_preferences');
+      if (savedPrefs) {
+        const parsed = JSON.parse(savedPrefs);
+        preferences.clearOnClose = parsed.clearOnClose !== undefined ? parsed.clearOnClose : true;
+        preferences.modelChoice = parsed.modelChoice || 'gpt-4o-mini';
+        preferences.passPercent = parsed.passPercent || 50;
+        preferences.apiEndpoint = parsed.apiEndpoint || 'https://api.openai.com/v1/chat/completions';
+        preferences.systemPrompt = parsed.systemPrompt || 'You are a helpful AI exam tutor. Explain why the correct option is the right answer to the multiple-choice question, and why the other options are incorrect. If the user selected an answer, explain why their choice was incorrect or correct. Keep the explanation clear, educational, and concise. Use markdown formatting like bold, bullet points, and code formatting where necessary.';
+        preferences.preset = parsed.preset || 'openai';
+        preferences.customModel = parsed.customModel || '';
+        preferences.customHeaders = parsed.customHeaders || '';
+        preferences.authHeaderName = parsed.authHeaderName || 'Authorization';
+        preferences.authHeaderPrefix = parsed.authHeaderPrefix !== undefined ? parsed.authHeaderPrefix : 'Bearer ';
+      }
+      
+      document.getElementById('clear-on-close-cb').checked = preferences.clearOnClose;
+      document.getElementById('config-pass-percent').value = preferences.passPercent;
+      
+      document.getElementById('settings-preset').value = preferences.preset;
+      document.getElementById('settings-endpoint').value = preferences.apiEndpoint;
+      document.getElementById('settings-prompt').value = preferences.systemPrompt;
+      document.getElementById('settings-custom-model').value = preferences.customModel;
+      document.getElementById('settings-headers').value = preferences.customHeaders;
+      document.getElementById('settings-auth-header').value = preferences.authHeaderName;
+      document.getElementById('settings-auth-prefix').value = preferences.authHeaderPrefix;
+      
+      refreshUIForPreset(preferences.preset, true);
+      document.getElementById('model-select').value = preferences.modelChoice;
+      
+      if (preferences.clearOnClose) {
+        window.addEventListener('beforeunload', () => {
+          // sessionStorage is tab-isolated, so it clears when the tab is closed.
+        });
+      }
+    }
+
+    function openSettingsModal() {
+      const dialog = document.getElementById('exam-config-dialog');
+      document.getElementById('config-pass-percent').value = preferences.passPercent;
+      document.getElementById('settings-preset').value = preferences.preset;
+      document.getElementById('settings-endpoint').value = preferences.apiEndpoint;
+      document.getElementById('settings-prompt').value = preferences.systemPrompt;
+      document.getElementById('settings-custom-model').value = preferences.customModel || '';
+      document.getElementById('settings-headers').value = preferences.customHeaders || '';
+      document.getElementById('settings-auth-header').value = preferences.authHeaderName || 'Authorization';
+      document.getElementById('settings-auth-prefix').value = preferences.authHeaderPrefix !== undefined ? preferences.authHeaderPrefix : 'Bearer ';
+      dialog.showModal();
+    }
+
+    function initButtonListeners() {
+      // API Settings events
+      const keyInput = document.getElementById('api-key-input');
+      keyInput.addEventListener('input', (e) => {
+        setApiKey(e.target.value.trim());
+      });
+
+      document.getElementById('clear-key-btn').addEventListener('click', () => {
+        setApiKey('');
+        keyInput.value = '';
+        showToast('API Key cleared successfully.', 'success');
+      });
+
+      document.getElementById('clear-on-close-cb').addEventListener('change', (e) => {
+        preferences.clearOnClose = e.target.checked;
+        savePreferences();
+      });
+
+      document.getElementById('model-select').addEventListener('change', (e) => {
+        preferences.modelChoice = e.target.value;
+        savePreferences();
+      });
+
+      // Tab Proceed button Upload Mode
+      document.getElementById('parse-proceed-btn').addEventListener('click', handleUploadParseProceed);
+      
+      // AI Gen tab trigger
+      document.getElementById('ai-generate-btn').addEventListener('click', handleAIGenerateExam);
+
+      // Question list editing actions
+      document.getElementById('pv-add-q-btn').addEventListener('click', handlePreviewAddQuestion);
+      document.getElementById('pv-export-btn').addEventListener('click', handleExportSetJSON);
+      document.getElementById('pv-save-btn').addEventListener('click', handleSaveGeneratedSet);
+      document.getElementById('pv-back-btn').addEventListener('click', () => {
+        switchView('preview-view', 'setup-view');
+      });
+      document.getElementById('pv-start-btn').addEventListener('click', handleStartExam);
+
+      // Timer controls
+      document.getElementById('exam-timer-pause-btn').addEventListener('click', pauseExamTimer);
+      document.getElementById('exam-timer-resume-btn').addEventListener('click', resumeExamTimer);
+
+      // Exam navigations
+      document.getElementById('exam-prev-btn').addEventListener('click', () => navigateSlider(-1));
+      document.getElementById('exam-next-btn').addEventListener('click', () => navigateSlider(1));
+      document.getElementById('exam-flag-btn').addEventListener('click', toggleQuestionFlagged);
+      document.getElementById('exam-submit-trigger').addEventListener('click', openSubmitConfirmModal);
+
+      // Submit modal cancel/proceed
+      document.getElementById('confirm-submit-close-btn').addEventListener('click', () => document.getElementById('confirm-submit-dialog').close());
+      document.getElementById('confirm-submit-cancel').addEventListener('click', () => document.getElementById('confirm-submit-dialog').close());
+      document.getElementById('confirm-submit-proceed').addEventListener('click', submitExamFinal);
+
+      // Dialog Resume
+      document.getElementById('resume-discard-btn').addEventListener('click', discardSavedState);
+      document.getElementById('resume-confirm-btn').addEventListener('click', restoreSavedState);
+
+      // Result triggers
+      document.getElementById('results-retake-btn').addEventListener('click', handleRetakeExam);
+      document.getElementById('results-restart-btn').addEventListener('click', handleRestartExam);
+      document.getElementById('results-filter').addEventListener('change', renderResultsReviewList);
+      document.getElementById('results-export-json-btn').addEventListener('click', handleExportResultsJSON);
+      document.getElementById('results-export-csv-btn').addEventListener('click', handleExportResultsCSV);
+
+      // Open Config Modal
+      document.getElementById('open-config-btn').addEventListener('click', openSettingsModal);
+
+      // Preset change listener
+      document.getElementById('settings-preset').addEventListener('change', (e) => {
+        refreshUIForPreset(e.target.value, false);
+      });
+
+      // Custom model watcher
+      document.getElementById('settings-custom-model').addEventListener('input', () => {
+        refreshUIForPreset(document.getElementById('settings-preset').value, true);
+      });
+
+      // Config modal trigger
+      document.getElementById('config-save-btn').addEventListener('click', () => {
+        preferences.passPercent = parseInt(document.getElementById('config-pass-percent').value, 10) || 50;
+        preferences.preset = document.getElementById('settings-preset').value;
+        preferences.apiEndpoint = document.getElementById('settings-endpoint').value.trim();
+        preferences.systemPrompt = document.getElementById('settings-prompt').value.trim();
+        preferences.customModel = document.getElementById('settings-custom-model').value.trim();
+        preferences.customHeaders = document.getElementById('settings-headers').value.trim();
+        preferences.authHeaderName = document.getElementById('settings-auth-header').value.trim() || 'Authorization';
+        preferences.authHeaderPrefix = document.getElementById('settings-auth-prefix').value;
+        
+        savePreferences();
+        refreshUIForPreset(preferences.preset, true);
+        
+        document.getElementById('exam-config-dialog').close();
+        showToast("Settings saved successfully.", "success");
+      });
+    }
+
+    function savePreferences() {
+      localStorage.setItem('prepmaster_preferences', JSON.stringify(preferences));
+    }
+
+    function loadPreferences() {
+      const saved = localStorage.getItem('prepmaster_preferences');
+      if (saved) {
+        Object.assign(preferences, JSON.parse(saved));
+      }
+    }
+
+    // --- UI/UX GLOW & TAB TOGGLES ---
+
+    function initThemeToggle() {
+      const toggle = document.getElementById('theme-toggle-btn');
+      const sun = document.getElementById('theme-sun-icon');
+      const moon = document.getElementById('theme-moon-icon');
+
+      const applyTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        preferences.theme = theme;
+        savePreferences();
+        if (theme === 'light') {
+          sun.classList.remove('hidden');
+          moon.classList.add('hidden');
+        } else {
+          sun.classList.add('hidden');
+          moon.classList.remove('hidden');
+        }
+      };
+
+      applyTheme(preferences.theme);
+      toggle.addEventListener('click', () => {
+        applyTheme(preferences.theme === 'dark' ? 'light' : 'dark');
+      });
+    }
+
+    function initTabNavigation() {
+      const tabUpload = document.getElementById('tab-upload');
+      const tabGen = document.getElementById('tab-generate');
+      const panelUpload = document.getElementById('panel-upload');
+      const panelGen = document.getElementById('panel-generate');
+
+      tabUpload.addEventListener('click', () => {
+        tabUpload.classList.add('active');
+        tabGen.classList.remove('active');
+        panelUpload.classList.remove('hidden');
+        panelGen.classList.add('hidden');
+      });
+
+      tabGen.addEventListener('click', () => {
+        tabGen.classList.add('active');
+        tabUpload.classList.remove('active');
+        panelGen.classList.remove('hidden');
+        panelUpload.classList.add('hidden');
+      });
+    }
+
+    function initFormSliders() {
+      const countInput = document.getElementById('ai-count');
+      const countVal = document.getElementById('ai-count-val');
+      countInput.addEventListener('input', (e) => {
+        countVal.textContent = e.target.value;
+      });
+    }
+
+    // File Drag & Drop Zones setup
+    function initDragAndDrop() {
+      const zones = [
+        { id: 'qp-drop-zone', inputId: 'qp-file-input', infoId: 'qp-file-info' },
+        { id: 'ak-drop-zone', inputId: 'ak-file-input', infoId: 'ak-file-info' }
+      ];
+
+      zones.forEach(z => {
+        const dropZone = document.getElementById(z.id);
+        const input = document.getElementById(z.inputId);
+        const info = document.getElementById(z.infoId);
+
+        ['dragenter', 'dragover'].forEach(name => {
+          dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+          dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+          });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            if (files[0].size > 5 * 1024 * 1024) {
+              showToast("Error: File size exceeds the 5MB limit.", "error");
+              return;
+            }
+            input.files = files;
+            updateFileInfo(files[0], info);
+          }
+        });
+
+        input.addEventListener('change', (e) => {
+          if (input.files.length > 0) {
+            if (input.files[0].size > 5 * 1024 * 1024) {
+              showToast("Error: File size exceeds the 5MB limit.", "error");
+              input.value = '';
+              return;
+            }
+            updateFileInfo(input.files[0], info);
+          }
+        });
+      });
+    }
+
+    function updateFileInfo(file, infoEl) {
+      infoEl.textContent = `📄 Selected: ${escapeHTML(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+      infoEl.classList.remove('hidden');
+    }
+
+    // --- PARSING & OCR CORE ALGORITHMS ---
+
+    // XSS Prevention: Safe HTML escaping helper
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str;
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Read PDF or Image files
+    function extractTextFromFile(file, progressId) {
+      return new Promise((resolve, reject) => {
+        const loaderProgress = document.getElementById(progressId);
+        
+        if (file.type === 'text/plain') {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () => reject(new Error('Failed to read plain text file.'));
+          reader.readAsText(file);
+        } else if (file.type === 'application/pdf') {
+          loaderProgress.textContent = "Loading PDF Engine...";
+          const reader = new FileReader();
+          reader.onload = async function() {
+            try {
+              const typedarray = new Uint8Array(this.result);
+              const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+              let text = '';
+              const total = pdf.numPages;
+              
+              for (let i = 1; i <= total; i++) {
+                loaderProgress.textContent = `Extracting PDF Page ${i} / ${total}...`;
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                
+                let lastY = -1;
+                let pageText = '';
+                
+                for (const item of textContent.items) {
+                  const y = item.transform[5];
+                  if (lastY !== -1 && Math.abs(y - lastY) > 5) {
+                    pageText += '\n';
+                  } else if (pageText.length > 0 && !pageText.endsWith('\n') && !item.str.startsWith(' ')) {
+                    pageText += ' ';
+                  }
+                  pageText += item.str;
+                  lastY = y;
+                }
+                text += pageText + '\n\n';
+              }
+              resolve(text);
+            } catch (err) {
+              reject(new Error("PDF text extraction failed: " + err.message));
+            }
+          };
+          reader.onerror = () => reject(new Error("Failed to read PDF file binary."));
+          reader.readAsArrayBuffer(file);
+        } else if (file.type.startsWith('image/')) {
+          loaderProgress.textContent = "Initializing Image OCR...";
+          
+          Tesseract.recognize(
+            file,
+            'eng',
+            {
+              logger: m => {
+                if (m.status === 'recognizing text') {
+                  loaderProgress.textContent = `Performing OCR: ${Math.round(m.progress * 100)}%`;
+                }
+              }
+            }
+          ).then(({ data: { text } }) => {
+            resolve(text);
+          }).catch(err => {
+            reject(new Error("Image OCR failed: " + err.message));
+          });
+        } else {
+          // Attempt generic text read
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () => reject(new Error('Unsupported file format.'));
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    // MCQ Options Parser
+    function extractOptions(blockText) {
+      const cleanText = blockText.replace(/\r\n/g, '\n');
+      const options = {};
+      
+      const optionRegex = /(?:^|\s)(?:\(|\[)?([A-Ea-e])(?:\.|\)|\-|\])\s+([\s\S]+?)(?=(?:\s+(?:\(|\[)?[A-Ea-e](?:\.|\)|\-|\])\s+)|$)/g;
+      
+      let match;
+      const matches = [];
+      while ((match = optionRegex.exec(cleanText)) !== null) {
+        matches.push({
+          index: match.index,
+          key: match[1].toUpperCase(),
+          value: match[2].trim()
+        });
+      }
+      
+      if (matches.length >= 2) {
+        let firstOptionIndex = matches[0].index;
+        let questionBody = cleanText.substring(0, firstOptionIndex).trim();
+        
+        matches.forEach(m => {
+          options[m.key] = m.value;
+        });
+        
+        return { questionBody, options };
+      }
+      
+      // Fallback: numbered options (1-4)
+      const numOptionRegex = /(?:^|\s)(?:\(|\[)?([1-4])(?:\.|\)|\-|\])\s+([\s\S]+?)(?=(?:\s+(?:\(|\[)?[1-4](?:\.|\)|\-|\])\s+)|$)/g;
+      const numMatches = [];
+      while ((match = numOptionRegex.exec(cleanText)) !== null) {
+        numMatches.push({
+          index: match.index,
+          key: match[1],
+          value: match[2].trim()
+        });
+      }
+      
+      if (numMatches.length >= 2) {
+        let firstOptionIndex = numMatches[0].index;
+        let questionBody = cleanText.substring(0, firstOptionIndex).trim();
+        
+        numMatches.forEach(m => {
+          const keyMap = { '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
+          options[keyMap[m.key]] = m.value;
+        });
+        
+        return { questionBody, options };
+      }
+      
+      return { questionBody: cleanText, options: null };
+    }
+
+    // Parse question sheet
+    function parseQuestionSheet(text) {
+      const normalized = text.replace(/\r\n/g, '\n') + '\n\n';
+      
+      // Boundaries matching numbers (e.g. 1. or Q1. or [1])
+      const qStartRegex = /^[ \t]*(?:(?:Q|q)uestion\s*|Q\s*)?\[?(\d+)\]?[\.\:\-\)\s]+/gm;
+      
+      const parsedQuestions = [];
+      const matches = [];
+      let match;
+      
+      while ((match = qStartRegex.exec(normalized)) !== null) {
+        matches.push({
+          number: parseInt(match[1], 10),
+          index: match.index,
+          fullMarker: match[0]
+        });
+      }
+      
+      if (matches.length === 0) {
+        return [];
+      }
+      
+      for (let i = 0; i < matches.length; i++) {
+        const startIdx = matches[i].index + matches[i].fullMarker.length;
+        const endIdx = (i + 1 < matches.length) ? matches[i + 1].index : normalized.length;
+        const rawBlock = normalized.substring(startIdx, endIdx).trim();
+        const qNum = matches[i].number;
+        
+        const parsed = extractOptions(rawBlock);
+        let qText = parsed.questionBody.trim();
+        qText = qText.replace(/^[\.\:\-\)\s]+/, '').trim();
+        
+        parsedQuestions.push({
+          questionNumber: qNum,
+          questionText: qText,
+          options: parsed.options || { "A": "A", "B": "B", "C": "C", "D": "D" },
+          correctAnswer: "",
+          explanation: ""
+        });
+      }
+      
+      return parsedQuestions;
+    }
+
+    // Answer Key Parser supporting keys: 1.A, 1=A, Q1. A, 1) A, 1-A, CSV 1,A
+    function parseAnswerKeySheet(text) {
+      const normalized = text.trim();
+      if (!normalized) return {};
+      
+      const answers = {};
+      
+      // Standard pairs e.g. 1. A, Q2: C, 3) B, 4-A, 5=A, 6B
+      const pairRegex = /(?:^|[,;\s\t\n]+)(?:Q|q)?(\d+)\s*[\.\:\-\=\)]?\s*([A-Ea-e])(?=[,;\s\t\n]+|$)/g;
+      let match;
+      let pairCount = 0;
+      
+      while ((match = pairRegex.exec(normalized)) !== null) {
+        const qNum = parseInt(match[1], 10);
+        const ans = match[2].toUpperCase();
+        answers[qNum] = ans;
+        pairCount++;
+      }
+      
+      if (pairCount > 0) return answers;
+      
+      // CSV Split
+      const lines = normalized.split(/\r?\n/);
+      let csvCount = 0;
+      lines.forEach(line => {
+        const parts = line.split(/[,\t]/);
+        if (parts.length >= 2) {
+          const qNum = parseInt(parts[0].trim(), 10);
+          const ans = parts[1].trim().toUpperCase();
+          if (!isNaN(qNum) && /^[A-E]$/.test(ans)) {
+            answers[qNum] = ans;
+            csvCount++;
+          }
+        }
+      });
+      
+      if (csvCount > 0) return answers;
+      
+      // One sequential letter per line
+      let sequentialCount = 0;
+      const seqAnswers = {};
+      lines.forEach((line, index) => {
+        const cleaned = line.trim().toUpperCase();
+        if (/^[A-E]$/.test(cleaned)) {
+          seqAnswers[index + 1] = cleaned;
+          sequentialCount++;
+        }
+      });
+      
+      if (sequentialCount > 0) return seqAnswers;
+      
+      // Raw string ACBD
+      const cleanedSeq = normalized.replace(/[\s,;\.\-]/g, '').toUpperCase();
+      if (/^[A-E]+$/.test(cleanedSeq)) {
+        const seqAnswers2 = {};
+        for (let i = 0; i < cleanedSeq.length; i++) {
+          seqAnswers2[i + 1] = cleanedSeq[i];
+        }
+        return seqAnswers2;
+      }
+      
+      return {};
+    }
+
+    // --- UPLOAD VIEW LOGIC ---
+
+    async function handleUploadParseProceed() {
+      const qpInput = document.getElementById('qp-file-input');
+      const akInput = document.getElementById('ak-file-input');
+      const qpManual = document.getElementById('qp-manual-text').value.trim();
+      const akManual = document.getElementById('ak-manual-text').value.trim();
+      
+      const loader = document.getElementById('parse-loading');
+      const progressText = document.getElementById('parse-progress-text');
+      
+      const hasQP = (qpInput.files.length > 0) || qpManual.length > 0;
+      
+      if (!hasQP) {
+        showToast("Question sheet upload or pasted text is required.", "error");
+        return;
+      }
+      
+      loader.classList.remove('hidden');
+      
+      try {
+        let qText = '';
+        let aText = '';
+        
+        // Extract QP
+        if (qpInput.files.length > 0) {
+          qText = await extractTextFromFile(qpInput.files[0], 'parse-progress-text');
+          document.getElementById('qp-manual-text').value = qText;
+        } else {
+          qText = qpManual;
+        }
+        
+        // Extract AK
+        if (akInput.files.length > 0) {
+          aText = await extractTextFromFile(akInput.files[0], 'parse-progress-text');
+          document.getElementById('ak-manual-text').value = aText;
+        } else {
+          aText = akManual;
+        }
+        
+        // Parsing
+        questions = parseQuestionSheet(qText);
+        answersMatched = parseAnswerKeySheet(aText);
+        
+        if (questions.length === 0) {
+          throw new Error("No numbered questions parsed. Check formatting.");
+        }
+        
+        // Match logic
+        questions.forEach(q => {
+          if (answersMatched[q.questionNumber]) {
+            q.correctAnswer = answersMatched[q.questionNumber];
+          }
+        });
+        
+        // Refresh Review view
+        buildPreviewEditorList();
+        updatePreviewAnalytics();
+        
+        loader.classList.add('hidden');
+        switchView('setup-view', 'preview-view');
+        showToast(`Parsed ${questions.length} questions successfully!`, 'success');
+        
+      } catch (err) {
+        loader.classList.add('hidden');
+        showToast("Parsing failed: " + err.message, "error");
+      }
+    }
+
+    // --- AI GENERATION FEATURE ---
+
+    async function handleAIGenerateExam() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        showToast("🔒 API key required. Please enter an API key in the settings bar at the top of the page.", "error");
+        openSettingsModal();
+        return;
+      }
+
+      const examName = document.getElementById('ai-exam-name').value.trim();
+      const subjects = document.getElementById('ai-subjects').value.trim();
+      const qCount = document.getElementById('ai-count').value;
+      const difficulty = document.getElementById('ai-difficulty').value;
+      const style = document.getElementById('ai-style').value;
+      
+      if (!examName || !subjects) {
+        showToast("Please fill in both Exam Name and Focus Subjects.", "error");
+        return;
+      }
+
+      const loader = document.getElementById('generate-loading');
+      loader.classList.remove('hidden');
+      
+      const styleDesc = style === 'case-study' ? "Include case-study based scenarios for some questions." : "Standard MCQ style.";
+      
+      const prompt = `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName} focusing on ${subjects}. ${styleDesc}
+Format exactly as a valid JSON array:
+[
+  {
+    "questionNumber": 1,
+    "questionText": "...",
+    "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+    "correctAnswer": "A",
+    "explanation": "..."
+  }
+]
+Ensure questions are exam-appropriate, accurate, and have options starting with A), B), C), D). Output ONLY the JSON array.`;
+
+      // API fetch with retry/exponential backoff
+      try {
+        const systemPrompt = 'You are an expert academic examiner that outputs valid JSON lists of mock questions.';
+        const resultText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
+        
+        // Sanitize JSON format
+        let jsonText = resultText.trim();
+        if (jsonText.startsWith('```')) {
+          jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+        
+        const parsed = JSON.parse(jsonText);
+        
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          throw new Error("AI response was not a valid question array.");
+        }
+        
+        // Map elements into state structure
+        questions = parsed.map((q, idx) => {
+          // Normalize options list into an object key-value pairs
+          const optionsObj = {};
+          if (Array.isArray(q.options)) {
+            q.options.forEach(opt => {
+              const letterMatch = opt.match(/^\s*([A-D])[\)\.\s-]\s*(.+)$/i);
+              if (letterMatch) {
+                optionsObj[letterMatch[1].toUpperCase()] = letterMatch[2].trim();
+              }
+            });
+          }
+          
+          return {
+            questionNumber: q.questionNumber || (idx + 1),
+            questionText: q.questionText || "Missing question text",
+            options: (Object.keys(optionsObj).length >= 2) ? optionsObj : { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
+            correctAnswer: (q.correctAnswer || "A").toUpperCase(),
+            explanation: q.explanation || ""
+          };
+        });
+
+        buildPreviewEditorList();
+        updatePreviewAnalytics();
+        
+        loader.classList.add('hidden');
+        switchView('setup-view', 'preview-view');
+        showToast(`AI generated ${questions.length} questions successfully!`, 'success');
+        
+      } catch (err) {
+        loader.classList.add('hidden');
+        showToast("Generation failed: " + err.message, "error");
+      }
+    }
+
+    // Call AI API with retry and exponential backoff
+    async function callAiCompletions(prompt, systemPrompt, retries = 3, delay = 1000) {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        throw new Error("🔒 API key required. Please enter an API key.");
+      }
+
+      const endpoint = preferences.apiEndpoint || 'https://api.openai.com/v1/chat/completions';
+      const isAnthropic = preferences.preset === 'anthropic' || endpoint.includes('api.anthropic.com');
+
+      // Build headers
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      // Set authorization header if key is provided
+      const authHeaderName = preferences.authHeaderName || 'Authorization';
+      const authPrefix = preferences.authHeaderPrefix !== undefined ? preferences.authHeaderPrefix : 'Bearer ';
+      headers[authHeaderName] = `${authPrefix}${apiKey}`;
+
+      // Load custom JSON headers if present
+      if (preferences.customHeaders) {
+        try {
+          const parsedHeaders = JSON.parse(preferences.customHeaders);
+          Object.assign(headers, parsedHeaders);
+        } catch (e) {
+          console.error('Failed to parse custom headers JSON:', e);
+        }
+      }
+
+      // Build body payload
+      let body;
+      if (isAnthropic) {
+        body = {
+          model: preferences.modelChoice,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 4096,
+          temperature: 0.5
+        };
+      } else {
+        body = {
+          model: preferences.modelChoice,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.5
+        };
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.error?.message || errData.error || `HTTP ${response.status}`;
+          throw new Error(errMsg);
+        }
+
+        const data = await response.json();
+        
+        if (isAnthropic) {
+          if (data.content && data.content[0]) {
+            return data.content[0].text || '';
+          }
+          throw new Error('Anthropic direct response format was unexpected.');
+        } else {
+          return data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+        }
+
+      } catch (err) {
+        if (retries > 0) {
+          showToast(`Request failed. Retrying in ${(delay / 1000).toFixed(1)}s...`, 'info');
+          await new Promise(r => setTimeout(r, delay));
+          return callAiCompletions(prompt, systemPrompt, retries - 1, delay * 2);
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // --- PREVIEW EDITOR PANEL ---
+
+    function buildPreviewEditorList() {
+      const container = document.getElementById('questions-edit-list');
+      container.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-editor-card';
+        card.dataset.index = idx;
+        
+        const optionsList = q.options ? Object.entries(q.options) : [['A', ''], ['B', ''], ['C', ''], ['D', '']];
+        let optionsMarkup = '';
+        
+        optionsList.forEach(([letter, text]) => {
+          optionsMarkup += `
+            <div class="option-input-group">
+              <span>${letter}:</span>
+              <input type="text" class="opt-input" data-letter="${letter}" value="${escapeHTML(text)}">
+            </div>
+          `;
+        });
+        
+        const optionKeys = optionsList.map(o => o[0]);
+        let correctOptionsMarkup = '<option value="">-- Set Key --</option>';
+        optionKeys.forEach(k => {
+          const selected = q.correctAnswer === k ? 'selected' : '';
+          correctOptionsMarkup += `<option value="${k}" ${selected}>${k}</option>`;
+        });
+
+        card.innerHTML = `
+          <div class="q-card-header">
+            <span class="q-card-title">Question Number: <input type="number" class="form-control q-num-edit" style="width: 70px; display:inline-block; padding: 4px 8px; min-height:auto;" value="${q.questionNumber}"></span>
+            <button class="btn btn-danger btn-icon-only remove-q-btn" aria-label="Delete question">🗑️</button>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 8px;">
+            <textarea class="form-control q-text-edit" rows="2">${escapeHTML(q.questionText)}</textarea>
+          </div>
+          
+          <div class="option-grid-editor">
+            ${optionsMarkup}
+          </div>
+          
+          <div style="display: flex; gap: 16px; align-items:center; margin-top: 12px; flex-wrap: wrap;">
+            <div class="correct-answer-select">
+              <label>Correct Key:</label>
+              <select class="q-correct-edit">${correctOptionsMarkup}</select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+              <input type="text" class="form-control q-exp-edit" placeholder="AI Explanation (optional)" value="${escapeHTML(q.explanation || '')}" style="padding: 6px 12px; font-size: 0.85rem;">
+            </div>
+          </div>
+        `;
+
+        // Real-time edits sync to state
+        card.querySelector('.q-num-edit').addEventListener('input', (e) => {
+          q.questionNumber = parseInt(e.target.value, 10) || 0;
+          updatePreviewAnalytics();
+        });
+
+        card.querySelector('.q-text-edit').addEventListener('input', (e) => {
+          q.questionText = e.target.value;
+        });
+
+        card.querySelectorAll('.opt-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const letter = e.target.dataset.letter;
+            if (!q.options) q.options = {};
+            q.options[letter] = e.target.value;
+          });
+        });
+
+        card.querySelector('.q-correct-edit').addEventListener('change', (e) => {
+          q.correctAnswer = e.target.value;
+          updatePreviewAnalytics();
+        });
+
+        card.querySelector('.q-exp-edit').addEventListener('input', (e) => {
+          q.explanation = e.target.value;
+        });
+
+        card.querySelector('.remove-q-btn').addEventListener('click', () => {
+          questions.splice(idx, 1);
+          buildPreviewEditorList();
+          updatePreviewAnalytics();
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function handlePreviewAddQuestion() {
+      const nextNum = questions.length > 0 ? Math.max(...questions.map(q => q.questionNumber)) + 1 : 1;
+      questions.push({
+        questionNumber: nextNum,
+        questionText: 'New question text...',
+        options: { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
+        correctAnswer: 'A',
+        explanation: ''
+      });
+      buildPreviewEditorList();
+      updatePreviewAnalytics();
+      
+      const container = document.getElementById('questions-edit-list');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function updatePreviewAnalytics() {
+      const total = questions.length;
+      let matched = 0;
+      let missing = 0;
+      let duplicates = 0;
+      
+      const numSet = new Set();
+      
+      questions.forEach(q => {
+        if (q.correctAnswer) {
+          matched++;
+        } else {
+          missing++;
+        }
+        
+        if (numSet.has(q.questionNumber)) {
+          duplicates++;
+        }
+        numSet.add(q.questionNumber);
+      });
+
+      document.getElementById('pv-total-q').textContent = total;
+      document.getElementById('pv-matched-ans').textContent = matched;
+      document.getElementById('pv-missing-ans').textContent = missing;
+      document.getElementById('pv-duplicates').textContent = duplicates;
+
+      const warningBox = document.getElementById('pv-warning-box');
+      const warningText = document.getElementById('pv-warning-text');
+      
+      if (missing > 0 || duplicates > 0) {
+        warningBox.classList.remove('hidden');
+        if (duplicates > 0) {
+          warningText.textContent = `Warning: You have ${duplicates} duplicate question numbers. Please fix before starting.`;
+        } else {
+          warningText.textContent = `Warning: ${missing} questions are missing their correct answer keys.`;
+        }
+      } else {
+        warningBox.classList.add('hidden');
+      }
+    }
+
+    // Export generated set to JSON file
+    function handleExportSetJSON() {
+      if (questions.length === 0) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "mock_exam_set.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("JSON exported successfully.", "success");
+    }
+
+    // LocalStorage Save & Load last 5 sets
+    function handleSaveGeneratedSet() {
+      const name = document.getElementById('save-set-name').value.trim();
+      if (!name) {
+        showToast("Please enter a name for the question set.", "error");
+        return;
+      }
+      if (questions.length === 0) {
+        showToast("No questions to save.", "error");
+        return;
+      }
+
+      let savedSets = JSON.parse(localStorage.getItem('ai_question_sets')) || [];
+      
+      // Filter duplicates
+      savedSets = savedSets.filter(s => s.name !== name);
+      
+      // Insert new at beginning
+      savedSets.unshift({ name, questions });
+      
+      // Limit to 5
+      if (savedSets.length > 5) {
+        savedSets.pop();
+      }
+      
+      localStorage.setItem('ai_question_sets', JSON.stringify(savedSets));
+      document.getElementById('save-set-name').value = '';
+      showToast(`Set "${name}" saved to local storage.`, "success");
+      renderSavedSetsList();
+    }
+
+    function renderSavedSetsList() {
+      const container = document.getElementById('saved-sets-container');
+      container.innerHTML = '';
+      
+      const savedSets = JSON.parse(localStorage.getItem('ai_question_sets')) || [];
+      
+      if (savedSets.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center py-4">No saved sets found.</p>`;
+        return;
+      }
+
+      savedSets.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'saved-set-item';
+        item.innerHTML = `
+          <div>
+            <strong style="color:var(--text-primary);">${escapeHTML(s.name)}</strong>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">${s.questions.length} Questions</div>
+          </div>
+          <div style="display:flex; gap: 8px;">
+            <button class="btn btn-secondary load-set-btn" style="padding: 4px 8px; font-size:0.75rem;">Load</button>
+            <button class="btn btn-danger delete-set-btn" style="padding: 4px 8px; font-size:0.75rem;">Delete</button>
+          </div>
+        `;
+        
+        item.querySelector('.load-set-btn').addEventListener('click', () => {
+          questions = s.questions;
+          buildPreviewEditorList();
+          updatePreviewAnalytics();
+          switchView('setup-view', 'preview-view');
+          showToast(`Loaded set "${s.name}"`, "success");
+        });
+
+        item.querySelector('.delete-set-btn').addEventListener('click', () => {
+          let sets = JSON.parse(localStorage.getItem('ai_question_sets')) || [];
+          sets = sets.filter(set => set.name !== s.name);
+          localStorage.setItem('ai_question_sets', JSON.stringify(sets));
+          renderSavedSetsList();
+          showToast(`Deleted set "${s.name}"`, "info");
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    // --- TIMED EXAM ENGINE ---
+
+    function handleStartExam() {
+      // Validate
+      if (questions.length === 0) {
+        showToast("Please add questions before starting.", "error");
+        return;
+      }
+      
+      // Load duration parameters
+      const mins = parseInt(document.getElementById('exam-timer-val').value, 10) || 30;
+      totalExamSeconds = mins * 60;
+      secondsRemaining = totalExamSeconds;
+      isTimerPaused = false;
+      
+      userSelections = {};
+      flaggedQuestions.clear();
+      currentQuestionIdx = 0;
+      
+      examStartTime = Date.now();
+      
+      // Start AutoSave timer
+      startAutoSaveLoop();
+      
+      // Initialize view structures
+      const layout = document.getElementById('exam-layout-val').value;
+      if (layout === 'slider') {
+        document.getElementById('exam-slider-container').classList.remove('hidden');
+        document.getElementById('exam-scroll-container').classList.add('hidden');
+        renderSliderQuestion();
+        initSwipeGestures();
+      } else {
+        document.getElementById('exam-slider-container').classList.add('hidden');
+        document.getElementById('exam-scroll-container').classList.remove('hidden');
+        renderScrollQuestions();
+      }
+
+      buildExamNavGrid();
+      updateExamProgress();
+      startExamTimer();
+
+      switchView('preview-view', 'exam-view');
+    }
+
+    function startExamTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      
+      const text = document.getElementById('exam-timer-text');
+      const box = document.getElementById('exam-timer-box');
+      box.classList.remove('timer-warning');
+
+      const updateDisplay = () => {
+        const m = Math.floor(secondsRemaining / 60);
+        const s = secondsRemaining % 60;
+        text.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        if (secondsRemaining <= 300) {
+          box.classList.add('timer-warning');
+        }
+      };
+
+      updateDisplay();
+
+      timerInterval = setInterval(() => {
+        if (!isTimerPaused) {
+          secondsRemaining--;
+          updateDisplay();
+          
+          if (secondsRemaining <= 0) {
+            clearInterval(timerInterval);
+            showToast("Time is up! Submitting your answers.", "error");
+            submitExamFinal();
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseExamTimer() {
+      isTimerPaused = true;
+      document.getElementById('exam-timer-pause-btn').classList.add('hidden');
+      document.getElementById('exam-timer-resume-btn').classList.remove('hidden');
+      showToast("Timer paused.", "info");
+    }
+
+    function resumeExamTimer() {
+      isTimerPaused = false;
+      document.getElementById('exam-timer-pause-btn').classList.remove('hidden');
+      document.getElementById('exam-timer-resume-btn').classList.add('hidden');
+      showToast("Timer resumed.", "info");
+    }
+
+    // Auto-Save active state to localStorage every 30 seconds
+    function startAutoSaveLoop() {
+      if (autoSaveInterval) clearInterval(autoSaveInterval);
+      autoSaveInterval = setInterval(() => {
+        saveActiveExamState();
+      }, 30000);
+    }
+
+    function saveActiveExamState() {
+      if (questions.length === 0) return;
+      
+      const state = {
+        questions,
+        userSelections,
+        flaggedQuestions: Array.from(flaggedQuestions),
+        secondsRemaining,
+        totalExamSeconds,
+        examStartTime,
+        displayPref: document.getElementById('exam-layout-val').value
+      };
+      
+      localStorage.setItem('exam_saved_state', JSON.stringify(state));
+      showToast("Progress auto-saved.", "info");
+    }
+
+    function checkSavedState() {
+      const saved = localStorage.getItem('exam_saved_state');
+      if (saved) {
+        document.getElementById('resume-exam-dialog').showModal();
+      }
+    }
+
+    function restoreSavedState() {
+      const saved = localStorage.getItem('exam_saved_state');
+      document.getElementById('resume-exam-dialog').close();
+      if (!saved) return;
+      
+      try {
+        const state = JSON.parse(saved);
+        questions = state.questions;
+        userSelections = state.userSelections;
+        flaggedQuestions = new Set(state.flaggedQuestions);
+        secondsRemaining = state.secondsRemaining;
+        totalExamSeconds = state.totalExamSeconds;
+        examStartTime = state.examStartTime;
+        
+        document.getElementById('exam-layout-val').value = state.displayPref;
+        
+        startAutoSaveLoop();
+        
+        if (state.displayPref === 'slider') {
+          document.getElementById('exam-slider-container').classList.remove('hidden');
+          document.getElementById('exam-scroll-container').classList.add('hidden');
+          renderSliderQuestion();
+          initSwipeGestures();
+        } else {
+          document.getElementById('exam-slider-container').classList.add('hidden');
+          document.getElementById('exam-scroll-container').classList.remove('hidden');
+          renderScrollQuestions();
+        }
+
+        buildExamNavGrid();
+        updateExamProgress();
+        startExamTimer();
+
+        switchView('setup-view', 'exam-view');
+        showToast("Active exam session restored successfully.", "success");
+      } catch (err) {
+        showToast("Failed to restore session.", "error");
+        discardSavedState();
+      }
+    }
+
+    function discardSavedState() {
+      localStorage.removeItem('exam_saved_state');
+      document.getElementById('resume-exam-dialog').close();
+    }
+
+    // Build Navigator cells
+    function buildExamNavGrid() {
+      const grid = document.getElementById('exam-nav-grid');
+      grid.innerHTML = '';
+      const displayPref = document.getElementById('exam-layout-val').value;
+
+      questions.forEach((q, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'nav-box';
+        cell.textContent = q.questionNumber;
+        
+        // Sync states
+        if (displayPref === 'slider' && idx === currentQuestionIdx) cell.classList.add('current');
+        if (userSelections[q.questionNumber]) cell.classList.add('answered');
+        if (flaggedQuestions.has(q.questionNumber)) cell.classList.add('flagged');
+
+        cell.addEventListener('click', () => {
+          if (displayPref === 'slider') {
+            currentQuestionIdx = idx;
+            renderSliderQuestion();
+            buildExamNavGrid();
+          } else {
+            const card = document.getElementById(`scroll-q-${q.questionNumber}`);
+            if (card) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.style.borderColor = 'var(--accent-color)';
+              setTimeout(() => card.style.borderColor = 'var(--card-border)', 1500);
+            }
+          }
+        });
+        grid.appendChild(cell);
+      });
+    }
+
+    function updateExamProgress() {
+      const total = questions.length;
+      const answered = Object.keys(userSelections).filter(k => userSelections[k]).length;
+      const percent = total > 0 ? (answered / total) * 100 : 0;
+      
+      document.getElementById('exam-progress-bar').style.width = `${percent}%`;
+      document.getElementById('exam-progress-text').textContent = `Answered ${answered} of ${total}`;
+    }
+
+    // Render Slider Mode question
+    function renderSliderQuestion() {
+      const q = questions[currentQuestionIdx];
+      if (!q) return;
+
+      document.getElementById('exam-q-badge').textContent = `Question ${q.questionNumber}`;
+      document.getElementById('exam-q-text').textContent = q.questionText;
+
+      const flagBtn = document.getElementById('exam-flag-btn');
+      if (flaggedQuestions.has(q.questionNumber)) {
+        flagBtn.classList.add('active');
+        flagBtn.querySelector('span').textContent = 'Flagged';
+      } else {
+        flagBtn.classList.remove('active');
+        flagBtn.querySelector('span').textContent = 'Flag for Review';
+      }
+
+      const stack = document.getElementById('exam-options-stack');
+      stack.innerHTML = '';
+
+      Object.entries(q.options || {}).forEach(([letter, text]) => {
+        const card = document.createElement('div');
+        card.className = 'option-card';
+        if (userSelections[q.questionNumber] === letter) {
+          card.classList.add('selected');
+        }
+
+        card.innerHTML = `
+          <div class="option-letter">${letter}</div>
+          <div class="option-text">${escapeHTML(text)}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          userSelections[q.questionNumber] = letter;
+          stack.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          updateExamProgress();
+          buildExamNavGrid();
+        });
+
+        stack.appendChild(card);
+      });
+
+      document.getElementById('exam-prev-btn').disabled = currentQuestionIdx === 0;
+      const nextBtn = document.getElementById('exam-next-btn');
+      if (currentQuestionIdx === questions.length - 1) {
+        nextBtn.innerHTML = `Finish <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
+      } else {
+        nextBtn.innerHTML = `Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
+      }
+    }
+
+    // Render Scroll Mode questions
+    function renderScrollQuestions() {
+      const container = document.getElementById('exam-scroll-container');
+      container.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'scroll-q-card';
+        card.id = `scroll-q-${q.questionNumber}`;
+
+        let optionsMarkup = '';
+        Object.entries(q.options || {}).forEach(([letter, text]) => {
+          const selected = userSelections[q.questionNumber] === letter ? 'selected' : '';
+          optionsMarkup += `
+            <div class="option-card ${selected}" data-letter="${letter}">
+              <div class="option-letter">${letter}</div>
+              <div class="option-text">${escapeHTML(text)}</div>
+            </div>
+          `;
+        });
+
+        const flagged = flaggedQuestions.has(q.questionNumber) ? 'active' : '';
+        const flagText = flaggedQuestions.has(q.questionNumber) ? 'Flagged' : 'Flag for Review';
+
+        card.innerHTML = `
+          <div class="question-header-row">
+            <div class="question-number-badge">Question ${q.questionNumber}</div>
+            <button class="flag-btn ${flagged}" data-qnum="${q.questionNumber}">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
+              <span>${flagText}</span>
+            </button>
+          </div>
+          
+          <div class="question-body-text">${q.questionText}</div>
+          <div class="options-stack">${optionsMarkup}</div>
+        `;
+
+        // Selection hook
+        card.querySelectorAll('.option-card').forEach(optEl => {
+          optEl.addEventListener('click', () => {
+            const letter = optEl.dataset.letter;
+            userSelections[q.questionNumber] = letter;
+            card.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            optEl.classList.add('selected');
+            updateExamProgress();
+            buildExamNavGrid();
+          });
+        });
+
+        // Flag hook
+        card.querySelector('.flag-btn').addEventListener('click', (e) => {
+          const btn = e.currentTarget;
+          const qNum = parseInt(btn.dataset.qnum, 10);
+          if (flaggedQuestions.has(qNum)) {
+            flaggedQuestions.delete(qNum);
+            btn.classList.remove('active');
+            btn.querySelector('span').textContent = 'Flag for Review';
+          } else {
+            flaggedQuestions.add(qNum);
+            btn.classList.add('active');
+            btn.querySelector('span').textContent = 'Flagged';
+          }
+          buildExamNavGrid();
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    // Touch Swipe Gestures for Mobile Slider
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function initSwipeGestures() {
+      const container = document.getElementById('exam-slider-container');
+      
+      // Clear old listeners by cloning
+      const clone = container.cloneNode(true);
+      container.parentNode.replaceChild(clone, container);
+      
+      // Re-bind click events
+      document.getElementById('exam-prev-btn').addEventListener('click', () => navigateSlider(-1));
+      document.getElementById('exam-next-btn').addEventListener('click', () => navigateSlider(1));
+      document.getElementById('exam-flag-btn').addEventListener('click', toggleQuestionFlagged);
+      
+      clone.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      clone.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+    }
+
+    function handleSwipe() {
+      const threshold = 60;
+      if (touchEndX < touchStartX - threshold) {
+        // Swipe left -> Next Question
+        navigateSlider(1);
+      } else if (touchEndX > touchStartX + threshold) {
+        // Swipe right -> Prev Question
+        navigateSlider(-1);
+      }
+    }
+
+    function navigateSlider(direction) {
+      const next = currentQuestionIdx + direction;
+      if (next >= 0 && next < questions.length) {
+        currentQuestionIdx = next;
+        renderSliderQuestion();
+        buildExamNavGrid();
+      } else if (next === questions.length) {
+        openSubmitConfirmModal();
+      }
+    }
+
+    function toggleQuestionFlagged() {
+      const q = questions[currentQuestionIdx];
+      if (!q) return;
+      
+      if (flaggedQuestions.has(q.questionNumber)) {
+        flaggedQuestions.delete(q.number);
+        flaggedQuestions.delete(q.questionNumber);
+      } else {
+        flaggedQuestions.add(q.questionNumber);
+      }
+      
+      renderSliderQuestion();
+      buildExamNavGrid();
+    }
+
+    function openSubmitConfirmModal() {
+      const total = questions.length;
+      const answered = Object.keys(userSelections).filter(k => userSelections[k]).length;
+      const unanswered = total - answered;
+
+      const msg = document.getElementById('confirm-submit-msg');
+      const warn = document.getElementById('confirm-submit-warning');
+
+      msg.innerHTML = `You have answered <strong>${answered}</strong> of <strong>${total}</strong> questions.`;
+      if (unanswered > 0) {
+        warn.textContent = `⚠️ Warning: ${unanswered} questions are still skipped / unanswered.`;
+      } else {
+        warn.textContent = '';
+      }
+
+      document.getElementById('confirm-submit-dialog').showModal();
+    }
+
+    // Submit Action Final
+    function submitExamFinal() {
+      if (timerInterval) clearInterval(timerInterval);
+      if (autoSaveInterval) clearInterval(autoSaveInterval);
+      
+      examEndTime = Date.now();
+      localStorage.removeItem('exam_saved_state'); // Clear active session state
+      
+      document.getElementById('confirm-submit-dialog').close();
+      
+      // Calculate scores
+      evaluateScoresAndDisplay();
+    }
+
+    // --- RESULTS & EXPORT ANALYSIS ---
+
+    function evaluateScoresAndDisplay() {
+      let correct = 0;
+      let incorrect = 0;
+      let skipped = 0;
+
+      questions.forEach(q => {
+        const sel = userSelections[q.questionNumber];
+        if (!sel) {
+          skipped++;
+        } else if (sel === q.correctAnswer) {
+          correct++;
+        } else {
+          incorrect++;
+        }
+      });
+
+      const total = questions.length;
+      const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+      document.getElementById('results-percent').textContent = `${percent}%`;
+      document.getElementById('results-fraction').textContent = `${correct} / ${total}`;
+      document.getElementById('results-val-correct').textContent = correct;
+      document.getElementById('results-val-wrong').textContent = incorrect;
+      document.getElementById('results-val-skipped').textContent = skipped;
+
+      // Time taken calculation
+      const elapsedSecs = Math.round((examEndTime - examStartTime) / 1000);
+      const mins = Math.floor(elapsedSecs / 60);
+      const secs = elapsedSecs % 60;
+      document.getElementById('results-time-spent').textContent = `Time Taken: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} (Limit: ${Math.floor(totalExamSeconds / 60)}:00)`;
+
+      // Set pass/fail banner
+      const banner = document.getElementById('results-pass-fail');
+      if (percent >= preferences.passPercent) {
+        banner.textContent = "PASSED";
+        banner.className = "pass-fail-banner pass-banner";
+      } else {
+        banner.textContent = "FAILED";
+        banner.className = "pass-fail-banner fail-banner";
+      }
+
+      // Draw SVG Ring
+      const ring = document.getElementById('results-score-ring');
+      const offset = 502 - (502 * percent) / 100;
+      
+      if (percent >= 70) ring.style.stroke = 'var(--success)';
+      else if (percent >= preferences.passPercent) ring.style.stroke = 'var(--warning)';
+      else ring.style.stroke = 'var(--error)';
+
+      setTimeout(() => {
+        ring.style.strokeDashoffset = offset;
+      }, 50);
+
+      renderResultsReviewList();
+      switchView('exam-view', 'results-view');
+    }
+
+    function renderResultsReviewList() {
+      const container = document.getElementById('results-review-list');
+      container.innerHTML = '';
+
+      const filter = document.getElementById('results-filter').value;
+      const cache = getExplanationCache();
+
+      questions.forEach(q => {
+        const sel = userSelections[q.questionNumber];
+        const key = q.correctAnswer;
+        
+        let status = 'skipped';
+        if (sel) {
+          status = sel === key ? 'correct' : 'incorrect';
+        }
+
+        // Filter checks
+        if (filter !== 'all' && filter !== status) return;
+
+        const card = document.createElement('div');
+        card.className = `review-card ${status}-card`;
+
+        let headerBadge = '';
+        if (status === 'correct') headerBadge = `<span class="badge-result badge-result-correct">✓ Correct</span>`;
+        else if (status === 'incorrect') headerBadge = `<span class="badge-result badge-result-wrong">✗ Incorrect</span>`;
+        else headerBadge = `<span class="badge-result" style="background:var(--text-muted); color:#fff;">Skipped</span>`;
+
+        let optionsMarkup = '';
+        Object.entries(q.options || {}).forEach(([letter, text]) => {
+          let choiceClass = '';
+          let labelSuffix = '';
+          
+          if (letter === key) {
+            choiceClass = 'correct-choice';
+            labelSuffix = ' (Correct Key)';
+          } else if (letter === sel && status === 'incorrect') {
+            choiceClass = 'wrong-choice';
+            labelSuffix = ' (Your Choice)';
+          }
+
+          optionsMarkup += `
+            <div class="option-review-card ${choiceClass}">
+              <div class="option-letter" style="${choiceClass === 'correct-choice' ? 'background: var(--success); color: white;' : choiceClass === 'wrong-choice' ? 'background: var(--error); color: white;' : ''}">${letter}</div>
+              <div class="option-text">${escapeHTML(text)} <strong>${labelSuffix}</strong></div>
+            </div>
+          `;
+        });
+
+        // Determine if explanation is in state or in cache
+        const cachedExplanation = q.explanation || cache[q.questionNumber] || '';
+        const expBoxDisplay = cachedExplanation ? 'block' : 'none';
+
+        card.innerHTML = `
+          <div class="question-header-row">
+            <div class="question-number-badge">Question ${q.questionNumber}</div>
+            ${headerBadge}
+          </div>
+          <div class="question-body-text" style="font-size: 1rem; margin-bottom: 16px;">${escapeHTML(q.questionText)}</div>
+          <div class="options-stack" style="margin-bottom: 0;">${optionsMarkup}</div>
+          
+          <div class="ai-tutor-trigger-row" style="display:flex; justify-content: flex-end; margin-top: 16px;">
+            <button class="btn ai-btn pv-explain-btn" data-qnum="${q.questionNumber}">✨ Explain</button>
+          </div>
+          
+          <div class="ai-explanation-box" id="ai-review-box-${q.questionNumber}" style="display:${expBoxDisplay};">
+            <div class="ai-explanation-header">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>AI Explainer</span>
+            </div>
+            <div class="ai-explanation-body" id="ai-review-body-${q.questionNumber}">
+              ${cachedExplanation ? escapeHTML(cachedExplanation) : ''}
+            </div>
+          </div>
+        `;
+
+        card.querySelector('.pv-explain-btn').addEventListener('click', (e) => {
+          handleAIExplainQuestion(q, e.currentTarget);
+        });
+
+        container.appendChild(card);
+      });
+
+      if (container.children.length === 0) {
+        container.innerHTML = `<p class="text-secondary text-center py-4">No questions matched the filter.</p>`;
+      }
+    }
+
+    // AI Explainer Tutor Feature
+    async function handleAIExplainQuestion(question, btnEl) {
+      const qNum = question.questionNumber;
+      const box = document.getElementById(`ai-review-box-${qNum}`);
+      const body = document.getElementById(`ai-review-body-${qNum}`);
+
+      if (box.style.display === 'block' && body.textContent.trim()) {
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+
+      // Check Session cache
+      const cache = getExplanationCache();
+      if (cache[qNum]) {
+        body.textContent = cache[qNum];
+        return;
+      }
+      
+      // If explanation came with AI Generate set, use it
+      if (question.explanation) {
+        body.textContent = question.explanation;
+        saveExplanationToCache(qNum, question.explanation);
+        return;
+      }
+
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        body.innerHTML = `
+          <div class="alert alert-warning" style="margin-bottom:0;">
+            🔒 API key required. Please enter an API key in the settings bar at the top of the page.
+          </div>
+        `;
+        return;
+      }
+
+      body.innerHTML = `
+        <div class="ai-loader">
+          <div class="spinner"></div>
+          <span>Consulting AI Tutor...</span>
+        </div>
+      `;
+
+      const sel = userSelections[qNum] || 'Skipped';
+      const prompt = `Explain why ${question.correctAnswer} is the correct answer for: ${question.questionText}. User selected ${sel}. Keep explanation concise (2-3 sentences).`;
+      
+      try {
+        const systemPrompt = preferences.systemPrompt || 'You are a helpful and concise exam tutor.';
+        const expText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
+        
+        // Render as Text to prevent XSS
+        body.textContent = expText.trim();
+        
+        // Save to cache
+        saveExplanationToCache(qNum, expText.trim());
+
+      } catch (err) {
+        body.innerHTML = `
+          <div class="alert alert-danger" style="margin-bottom: 0;">
+            Failed to load explanation: ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    function getExplanationCache() {
+      return JSON.parse(sessionStorage.getItem('prepmaster_explain_cache')) || {};
+    }
+
+    function saveExplanationToCache(qNum, text) {
+      const cache = getExplanationCache();
+      cache[qNum] = text;
+      sessionStorage.setItem('prepmaster_explain_cache', JSON.stringify(cache));
+    }
+
+    // Results Exports
+    function handleExportResultsJSON() {
+      const results = compileResultsObject();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "exam_results.json");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("JSON results exported.", "success");
+    }
+
+    function handleExportResultsCSV() {
+      const results = compileResultsObject();
+      let csvContent = "Question Number,Question Text,Your Choice,Correct Answer,Status,Explanation\n";
+      
+      results.review.forEach(item => {
+        // Escape quotes
+        const qText = item.text.replace(/"/g, '""');
+        const exp = item.explanation.replace(/"/g, '""');
+        csvContent += `${item.qNum},"${qText}",${item.yourChoice},${item.correctAnswer},${item.status},"${exp}"\n`;
+      });
+
+      const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "exam_results.csv");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("CSV results exported.", "success");
+    }
+
+    function compileResultsObject() {
+      const cache = getExplanationCache();
+      const reviewData = questions.map(q => {
+        const sel = userSelections[q.questionNumber] || '';
+        let status = 'skipped';
+        if (sel) status = sel === q.correctAnswer ? 'correct' : 'incorrect';
+        
+        return {
+          qNum: q.questionNumber,
+          text: q.questionText,
+          yourChoice: sel,
+          correctAnswer: q.correctAnswer,
+          status,
+          explanation: q.explanation || cache[q.questionNumber] || ''
+        };
+      });
+
+      return {
+        totalQuestions: questions.length,
+        userSelections,
+        review: reviewData
+      };
+    }
+
+    function handleRetakeExam() {
+      userSelections = {};
+      flaggedQuestions.clear();
+      secondsRemaining = totalExamSeconds;
+      isTimerPaused = false;
+      examStartTime = Date.now();
+      
+      startAutoSaveLoop();
+      
+      const layout = document.getElementById('exam-layout-val').value;
+      if (layout === 'slider') {
+        document.getElementById('exam-slider-container').classList.remove('hidden');
+        document.getElementById('exam-scroll-container').classList.add('hidden');
+        currentQuestionIdx = 0;
+        renderSliderQuestion();
+        initSwipeGestures();
+      } else {
+        document.getElementById('exam-slider-container').classList.add('hidden');
+        document.getElementById('exam-scroll-container').classList.remove('hidden');
+        renderScrollQuestions();
+      }
+
+      buildExamNavGrid();
+      updateExamProgress();
+      startExamTimer();
+
+      switchView('results-view', 'exam-view');
+      showToast("Answers reset. Timer restarted.", "info");
+    }
+
+    function handleRestartExam() {
+      // Clear states
+      questions = [];
+      userSelections = {};
+      flaggedQuestions.clear();
+      if (timerInterval) clearInterval(timerInterval);
+      if (autoSaveInterval) clearInterval(autoSaveInterval);
+      localStorage.removeItem('exam_saved_state');
+      sessionStorage.removeItem('prepmaster_explain_cache'); // clear tab cache
+
+      switchView('results-view', 'setup-view');
+    }
+
+    // --- GENERAL ROUTERS & TOASTS ---
+
+    function switchView(fromId, toId) {
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+
+      if (fromEl) {
+        fromEl.style.opacity = '0';
+        fromEl.style.transform = 'translateY(15px)';
+        setTimeout(() => {
+          fromEl.classList.remove('active');
+          fromEl.style.display = 'none';
+          showTargetView(toEl);
+        }, 200);
+      } else {
+        showTargetView(toEl);
+      }
+    }
+
+    function showTargetView(el) {
+      if (!el) return;
+      el.style.display = 'block';
+      el.classList.add('active');
+      el.offsetHeight; // force reflow
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openSettingsModal() {
+      const dialog = document.getElementById('exam-config-dialog');
+      // Set to active dialog values
+      document.getElementById('config-pass-percent').value = preferences.passPercent;
+      document.getElementById('settings-preset').value = preferences.preset;
+      document.getElementById('settings-endpoint').value = preferences.apiEndpoint;
+      document.getElementById('settings-prompt').value = preferences.systemPrompt;
+      dialog.showModal();
+    }
+    
+    // Close settings modal
+    document.getElementById('config-close-btn').addEventListener('click', () => {
+      document.getElementById('exam-config-dialog').close();
+    });
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const icon = type === 'success' ? '✓' : '⚠️';
+      toast.innerHTML = `<span>${icon}</span> <span>${escapeHTML(message)}</span>`;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
