@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PrepMaster AI | Secure Mock Exam & AI Generation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1440,10 +1441,23 @@
   <header>
     <div class="header-container">
       <div class="logo">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z" />
+        <svg viewBox="0 0 32 32" style="width: 36px; height: 36px; filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.4));">
+          <defs>
+            <linearGradient id="logoGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6366f1" />
+              <stop offset="100%" stop-color="#a855f7" />
+            </linearGradient>
+            <linearGradient id="logoGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#ec4899" />
+            </linearGradient>
+          </defs>
+          <path d="M16 3 L29 9.5 L29 22.5 L16 29 L3 22.5 L3 9.5 Z" fill="none" stroke="url(#logoGrad1)" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M3 9.5 L16 16 L29 9.5" fill="none" stroke="url(#logoGrad2)" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M16 16 L16 29" fill="none" stroke="url(#logoGrad1)" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="16" cy="10" r="3.5" fill="url(#logoGrad2)"/>
         </svg>
-        <span>PrepMaster AI</span>
+        <span style="background: linear-gradient(90deg, var(--text-primary), var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PrepMaster AI</span>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
         <div id="header-timer-box" class="hidden" style="display: none; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: var(--accent-light); border: 1px solid var(--accent-color); font-weight: 700; font-size: 0.95rem; font-family: var(--font-family-title); color: var(--text-primary);">
@@ -2604,6 +2618,7 @@
 CRITICAL INSTRUCTIONS:
 - The difficulty level MUST be exactly: ${difficulty.toUpperCase()}.
 - The questions MUST strictly cover ONLY the requested subject/topic/chapters. DO NOT generate questions out of syllabus.
+- Every question MUST have EXACTLY ONE unequivocally correct answer. The three incorrect options (distractors) MUST be highly plausible, challenging, and represent common misconceptions or calculation errors to test deep understanding. However, they must be definitively incorrect so no two options can be argued as right.
 - Format exactly as a valid JSON array:
 [
   {
@@ -3789,7 +3804,7 @@ ${questionListText}`;
       updateLifelineButtons();
 
       // Load duration parameters
-      const isUntimed = document.getElementById('exam-timer-off').checked;
+      const isUntimed = document.getElementById('exam-timer-off').checked || continuousMode;
       if (isUntimed) {
         totalExamSeconds = 0;
         secondsRemaining = 0;
@@ -4108,6 +4123,7 @@ Which option is correct, and why? Provide a JSON response: {"correctAnswer": "${
 CRITICAL INSTRUCTIONS:
 - The difficulty level MUST be exactly: ${difficulty.toUpperCase()}.
 - The question MUST strictly cover ONLY the requested subject/topic/chapters. DO NOT generate out of syllabus questions.
+- The question MUST have EXACTLY ONE unequivocally correct answer. The three incorrect options (distractors) MUST be highly plausible, challenging, and represent common misconceptions or calculation errors. However, they must be definitively incorrect so no two options can be argued as right.
 - Output MUST be exactly one valid JSON object in this format:
 {
   "questionNumber": ${startNumber},
