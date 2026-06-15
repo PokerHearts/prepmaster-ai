@@ -1555,7 +1555,7 @@
             <h3 class="mb-4">AI Question Generator</h3>
             <div class="form-group">
               <label for="ai-exam-name">Exam Name / Topic:</label>
-              <input type="text" id="ai-exam-name" class="form-control" placeholder="e.g., UGC NET Management, SAT Math">
+              <input type="text" id="ai-exam-name" class="form-control" placeholder="e.g., CAT, SAT Math, Physics Chapter 3">
             </div>
             <div class="form-group">
               <label for="ai-subjects">Focus Subjects / Chapters (optional):</label>
@@ -2141,7 +2141,7 @@
       clearOnClose: true,
       passPercent: 50,
       apiEndpoint: 'https://api.openai.com/v1/chat/completions',
-      systemPrompt: 'You are a helpful AI exam tutor. Explain why the correct option is the right answer to the multiple-choice question, and why the other options are incorrect. If the user selected an answer, explain why their choice was incorrect or correct. Keep the explanation clear, educational, and concise. Use markdown formatting like bold, bullet points, and code formatting where necessary.',
+      systemPrompt: 'You are a helpful and concise AI exam tutor. Explain why the correct option is right and others are wrong in ONE short paragraph (max 3 sentences). Do not show step-by-step calculations unless absolutely necessary.',
       preset: 'openai',
       customModel: '',
       customHeaders: '',
@@ -2251,7 +2251,7 @@
         preferences.modelChoice = parsed.modelChoice || 'gpt-4o-mini';
         preferences.passPercent = parsed.passPercent || 50;
         preferences.apiEndpoint = parsed.apiEndpoint || 'https://api.openai.com/v1/chat/completions';
-        preferences.systemPrompt = parsed.systemPrompt || 'You are a helpful AI exam tutor. Explain why the correct option is the right answer to the multiple-choice question, and why the other options are incorrect. If the user selected an answer, explain why their choice was incorrect or correct. Keep the explanation clear, educational, and concise. Use markdown formatting like bold, bullet points, and code formatting where necessary.';
+        preferences.systemPrompt = parsed.systemPrompt || 'You are a helpful and concise AI exam tutor. Explain why the correct option is right and others are wrong in ONE short paragraph (max 3 sentences). Do not show step-by-step calculations unless absolutely necessary.';
         preferences.preset = parsed.preset || 'openai';
         preferences.customModel = parsed.customModel || '';
         preferences.customHeaders = parsed.customHeaders || '';
@@ -2600,8 +2600,11 @@
         ? ` Number questions starting from ${startNumber}. Do not repeat topics from earlier batches.`
         : '';
 
-      return `Generate ${qCount} ${difficulty} level multiple choice questions for ${examName}${focusText}. ${styleDesc}${numberingNote}
-Format exactly as a valid JSON array:
+      return `Generate ${qCount} new multiple choice questions strictly for the topic/subject: "${examName}${focusText}". ${styleDesc}${numberingNote}
+CRITICAL INSTRUCTIONS:
+- The difficulty level MUST be exactly: ${difficulty.toUpperCase()}.
+- The questions MUST strictly cover ONLY the requested subject/topic/chapters. DO NOT generate questions out of syllabus.
+- Format exactly as a valid JSON array:
 [
   {
     "questionNumber": ${startNumber},
@@ -2611,7 +2614,7 @@ Format exactly as a valid JSON array:
     "explanation": "..."
   }
 ]
-Ensure questions are exam-appropriate, accurate, and have options starting with A), B), C), D). Output ONLY the JSON array.`;
+Ensure questions are exam-appropriate, highly accurate, and have options starting with A), B), C), D). Output ONLY the JSON array.`;
     }
 
     async function parseAiQuestionResponse(resultText) {
@@ -4094,22 +4097,26 @@ Which option is correct, and why? Provide a JSON response: {"correctAnswer": "${
       stack.innerHTML = '';
 
       try {
-        const examName = document.getElementById('ai-exam-name').value.trim() || "General Knowledge";
+        const examName = document.getElementById('ai-exam-name').value.trim() || "Course Content";
         const subjects = document.getElementById('ai-subjects').value.trim();
         const difficulty = document.getElementById('ai-difficulty').value || "medium";
         const focusText = subjects ? ` focusing on ${subjects}` : '';
+        const startNumber = q.questionNumber;
 
         const sysPrompt = "You are an expert academic examiner. Output exactly one valid JSON object.";
-        const prompt = `Generate exactly ONE new ${difficulty} level multiple choice question for ${examName}${focusText}.
-Format exactly as a valid JSON object:
+        const prompt = `Generate exactly ONE new multiple choice question strictly for the topic/subject: "${examName}${focusText}".
+CRITICAL INSTRUCTIONS:
+- The difficulty level MUST be exactly: ${difficulty.toUpperCase()}.
+- The question MUST strictly cover ONLY the requested subject/topic/chapters. DO NOT generate out of syllabus questions.
+- Output MUST be exactly one valid JSON object in this format:
 {
-  "questionNumber": ${q.questionNumber},
+  "questionNumber": ${startNumber},
   "questionText": "...",
   "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
-  "correctAnswer": "...",
+  "correctAnswer": "A",
   "explanation": "..."
 }
-Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.`;
+Ensure the question is accurate and options start with A), B), C), D). Output ONLY the JSON object.`;
 
         const resultText = await callAiCompletions(prompt, sysPrompt, 3, 1000);
         
@@ -4695,7 +4702,8 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
           <div class="question-body-text" style="font-size: 1rem; margin-bottom: 16px;">${escapeHTML(q.questionText)}</div>
           <div class="options-stack" style="margin-bottom: 0;">${optionsMarkup}</div>
           
-          <div class="ai-tutor-trigger-row" style="display:flex; justify-content: flex-end; margin-top: 16px;">
+          <div class="ai-tutor-trigger-row" style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+            <button class="btn btn-secondary pv-recheck-btn" data-qnum="${q.questionNumber}">🔄 Recheck</button>
             <button class="btn ai-btn pv-explain-btn" data-qnum="${q.questionNumber}">✨ Explain</button>
           </div>
           
@@ -4715,6 +4723,9 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
 
         card.querySelector('.pv-explain-btn').addEventListener('click', (e) => {
           handleAIExplainQuestion(q, e.currentTarget);
+        });
+        card.querySelector('.pv-recheck-btn').addEventListener('click', (e) => {
+          handleAIRecheckQuestion(q, e.currentTarget);
         });
 
         container.appendChild(card);
@@ -4773,7 +4784,7 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
       const prompt = `Explain why ${question.correctAnswer} is the correct answer for: ${question.questionText}. User selected ${sel}. Keep explanation concise (2-3 sentences).`;
       
       try {
-        const systemPrompt = preferences.systemPrompt || 'You are a helpful and concise exam tutor.';
+        const systemPrompt = preferences.systemPrompt || 'You are a helpful and concise AI exam tutor. Explain why the correct option is right and others are wrong in ONE short paragraph (max 3 sentences). Do not show step-by-step calculations unless absolutely necessary.';
         const expText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
         
         // Render as Text to prevent XSS
@@ -4786,6 +4797,52 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json.
         body.innerHTML = `
           <div class="alert alert-danger" style="margin-bottom: 0;">
             Failed to load explanation: ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    async function handleAIRecheckQuestion(question, btnEl) {
+      const qNum = question.questionNumber;
+      const box = document.getElementById(`ai-review-box-${qNum}`);
+      const body = document.getElementById(`ai-review-body-${qNum}`);
+
+      box.style.display = 'block';
+
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        body.innerHTML = `
+          <div class="alert alert-warning" style="margin-bottom:0;">
+            🔒 API key required. Please configure it in the settings modal or at the top of the page.
+          </div>
+        `;
+        return;
+      }
+
+      body.innerHTML = `
+        <div class="ai-loader">
+          <div class="spinner"></div>
+          <span>Re-evaluating question with AI...</span>
+        </div>
+      `;
+
+      const prompt = `Please carefully re-evaluate the following question and its options. Identify if there is an error in the question or if the provided correct answer is wrong.
+Question: ${question.questionText}
+Options: ${JSON.stringify(question.options)}
+Provided Correct Answer: ${question.correctAnswer}
+
+Provide the corrected answer letter if it was wrong, and a concise explanation (max 3 sentences) of the correct logic.`;
+      
+      try {
+        const systemPrompt = 'You are an expert academic reviewer. Be extremely concise and point out any errors in the original question or answer.';
+        const expText = await callAiCompletions(prompt, systemPrompt, 3, 1000);
+        
+        saveExplanationToCache(qNum, expText.trim());
+        body.textContent = expText.trim();
+      } catch (err) {
+        body.innerHTML = `
+          <div class="alert alert-danger" style="margin-bottom: 0;">
+            Failed to recheck: ${err.message}
           </div>
         `;
       }
